@@ -10,6 +10,7 @@ import (
 	grpc_dv "github.com/aditya37/geospatial-tracking/delivery/gRPC"
 	"github.com/aditya37/geospatial-tracking/infra"
 	"github.com/aditya37/geospatial-tracking/proto"
+	"github.com/aditya37/geospatial-tracking/repository"
 
 	mqtt_manager "github.com/aditya37/geospatial-tracking/repository/mqtt"
 
@@ -97,9 +98,14 @@ func NewGrpc() (Grpc, error) {
 		return nil, err
 	}
 
+	// streamer data
+	ch := repository.NewChannelStreamGPS()
+	go ch.Run()
+
 	deviceUsecase := device_case.NewDeviceUsecase(
 		mqttManager,
 		deviceManagerRepo,
+		ch,
 	)
 
 	// async
@@ -117,7 +123,8 @@ func NewGrpc() (Grpc, error) {
 		byte(2),
 		deviceUsecase.SubscribeGPSTracking,
 	)
-	grpcTrackingDeliv := grpc_dv.NewTrackingDelivery(deviceUsecase)
+
+	grpcTrackingDeliv := grpc_dv.NewTrackingDelivery(deviceUsecase, ch)
 
 	return &grpcSvc{
 		grpcTrackingDlv: grpcTrackingDeliv,

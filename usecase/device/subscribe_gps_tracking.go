@@ -21,12 +21,14 @@ func (du *DeviceUsecase) SubscribeGPSTracking(c mqtt.Client, m mqtt.Message) {
 		util.Logger().Error(err)
 		return
 	}
-
 	status, err := du.getLastTrackingStatus(
 		ctx,
 		payload.DeviceId,
 		20,
 	)
+
+	du.gpChannelStream.StoreTrackingToChan(payload)
+
 	if err != nil {
 		if err == repository.ErrLastTrackingNotFound {
 			if validRequest := du.validateRequestPayloadBeforeInsert(payload, status); !validRequest {
