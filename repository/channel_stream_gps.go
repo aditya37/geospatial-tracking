@@ -7,38 +7,60 @@ import (
 )
 
 type Channel struct {
-	message chan usecase.MqttGpsTrackingPayload
+	// payload or struct for sent callback to device
+	streamGPSData chan usecase.MqttGpsTrackingPayload
+	err           chan error
 }
 type GPSChannelStream struct {
 	GPSTrackPayload *Channel
 	mute            sync.RWMutex
-	Result          chan usecase.MqttGpsTrackingPayload
+	StreamGPSTrack  chan usecase.MqttGpsTrackingPayload
+	ChanStreamError chan error
+	isDone          chan bool
 }
 
 func NewChannelStreamGPS() *GPSChannelStream {
 	return &GPSChannelStream{
 		mute: sync.RWMutex{},
 		GPSTrackPayload: &Channel{
-			message: make(chan usecase.MqttGpsTrackingPayload),
+			streamGPSData: make(chan usecase.MqttGpsTrackingPayload),
+			err:           make(chan error),
 		},
-		Result: make(chan usecase.MqttGpsTrackingPayload),
+		StreamGPSTrack:  make(chan usecase.MqttGpsTrackingPayload),
+		ChanStreamError: make(chan error),
+		isDone:          make(chan bool),
 	}
 }
 
-func (gs *GPSChannelStream) StoreTrackingToChan(message usecase.MqttGpsTrackingPayload) {
-	// set data to Channel
+// StoreTrackingToStreamChan....
+func (gs *GPSChannelStream) StoreTrackingToStreamChan(streamData usecase.MqttGpsTrackingPayload, err error) {
 	gs.mute.Lock()
-	gs.GPSTrackPayload.message <- message
+	gs.isDone <- false
+	gs.GPSTrackPayload.streamGPSData <- streamData
+	gs.GPSTrackPayload.err <- err
 	defer gs.mute.Unlock()
 }
 
+// Done...
+func (gs *GPSChannelStream) Done() {
+	gs.isDone <- true
+}
+
+//
 func (gs *GPSChannelStream) Run() {
 	for {
 		select {
-		case d := <-gs.GPSTrackPayload.message:
-			// expose data to exit
-			gs.Result <- d
-
+		case streamer := <-gs.GPSTrackPayload.streamGPSData:
+			gs.StreamGPSTrack <- streamer
+		case chanStreamErr := <-gs.GPSTrackPayload.err:
+			if chanStreamErr != nil {
+				gs.ChanStreamError <- chanStreamErr
+			}
+		case done := <-gs.isDone:
+			if !done {
+				continue
+			}
+			gs.StreamGPSTrack <- usecase.MqttGpsTrackingPayload{}
 		}
 	}
 

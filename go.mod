@@ -6,6 +6,7 @@ require (
 	github.com/aditya37/geofence-service v0.0.0-20220521042609-a06749b80188 // indirect
 	github.com/aditya37/get-env v0.0.0-20220409152532-eba7a73ece1f
 	github.com/eclipse/paho.mqtt.golang v1.4.1
+	github.com/go-redis/redis/v7 v7.4.1 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect

@@ -3,9 +3,11 @@ package grpc
 import (
 	"context"
 
+	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/proto"
 	"github.com/aditya37/geospatial-tracking/repository"
 	device_usecase "github.com/aditya37/geospatial-tracking/usecase/device"
+
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -35,17 +37,35 @@ func (td *Trackingdeliv) GetGPSTracking(req *emptypb.Empty, stream proto.Geotrac
 	streamCtx := stream.Context()
 	for {
 		select {
-		case d := <-td.repostream.Result:
-			if err := stream.Send(&proto.ResponseStreamGPSTracking{
-				DeviceId: d.DeviceId,
-				Lat:      float32(d.Lat),
-				Long:     float32(d.Long),
-				Status:   d.Status,
-			}); err != nil {
+		case d := <-td.repostream.StreamGPSTrack:
+			// open channel
+			device, err := td.deviceCase.GetDeviceDetailByDeviceId(streamCtx, d.DeviceId)
+			if err != nil {
+				util.Logger().Error(err)
+				continue
+			}
+			if err := stream.Send(
+				&proto.ResponseStreamGPSTracking{
+					DeviceId: d.DeviceId,
+					Status:   d.Status,
+					GpsData: &proto.GPSData{
+						Lat:   float32(d.Lat),
+						Long:  float32(d.Long),
+						Speed: float32(d.Speed),
+					},
+					DeviceInfo: &device,
+					Sensors: &proto.Sensor{
+						SignalStrength: float32(d.Signal),
+						Temp:           float32(d.Temp),
+					},
+				},
+			); err != nil {
 				return err
 			}
-
+		case errStream := <-td.repostream.ChanStreamError:
+			return errStream
 		case <-streamCtx.Done():
+			td.repostream.Done()
 			return nil
 		}
 	}

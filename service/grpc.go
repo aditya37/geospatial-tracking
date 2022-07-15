@@ -14,8 +14,9 @@ import (
 
 	mqtt_manager "github.com/aditya37/geospatial-tracking/repository/mqtt"
 
-	device_manager "github.com/aditya37/geospatial-tracking/repository/mysql/device-manager"
+	cache_manager "github.com/aditya37/geospatial-tracking/repository/redis"
 
+	device_manager "github.com/aditya37/geospatial-tracking/repository/mysql/device-manager"
 	device_case "github.com/aditya37/geospatial-tracking/usecase/device"
 	config "github.com/aditya37/get-env"
 	"google.golang.org/grpc"
@@ -88,6 +89,22 @@ func NewGrpc() (Grpc, error) {
 		mysqlInfra = infra.GetMysqlClientInstance()
 	}
 
+	// redis instance
+	infra.NewRedisInstance(infra.RedisConfigParam{
+		Port:     config.GetInt("REDIS_PORT", 6379),
+		Host:     config.GetString("REDIS_HOST", "127.0.0.1"),
+		Password: config.GetString("REDIS_PASSWORD", ""),
+	})
+	redisInfra := infra.GetRedisInstance()
+	if redisInfra == nil {
+		infra.NewRedisInstance(infra.RedisConfigParam{
+			Port:     config.GetInt("REDIS_PORT", 6379),
+			Host:     config.GetString("REDIS_HOST", "127.0.0.1"),
+			Password: config.GetString("REDIS_PASSWORD", ""),
+		})
+		redisInfra = infra.GetRedisInstance()
+	}
+
 	// mqtt repo
 	mqttManager, err := mqtt_manager.NewMqttManager(mqttClientInfra)
 	if err != nil {
@@ -98,15 +115,22 @@ func NewGrpc() (Grpc, error) {
 		return nil, err
 	}
 
+	// cache repo
+	cacheManagerRepo := cache_manager.CacheManager(redisInfra)
+
 	// streamer data
-	ch := repository.NewChannelStreamGPS()
-	go ch.Run()
+	gpsChannelStream := repository.NewChannelStreamGPS()
+	gpsChanForward := repository.NewTrackingForward()
+	go gpsChannelStream.Run()
 
 	deviceUsecase := device_case.NewDeviceUsecase(
 		mqttManager,
 		deviceManagerRepo,
-		ch,
+		gpsChannelStream,
+		cacheManagerRepo,
+		gpsChanForward,
 	)
+	gpsChanForward.Subscribe(deviceUsecase.ForwardGPSTracking)
 
 	// async
 	// mqtt qos = https://www.emqx.com/id/blog/introduction-to-mqtt-qos
@@ -124,13 +148,15 @@ func NewGrpc() (Grpc, error) {
 		deviceUsecase.SubscribeGPSTracking,
 	)
 
-	grpcTrackingDeliv := grpc_dv.NewTrackingDelivery(deviceUsecase, ch)
+	grpcTrackingDeliv := grpc_dv.NewTrackingDelivery(deviceUsecase, gpsChannelStream)
 
 	return &grpcSvc{
 		grpcTrackingDlv: grpcTrackingDeliv,
 		close: func() {
 			log.Println("Take rest broh!!!, all connection has been closed")
 			deviceManagerRepo.Close()
+			cacheManagerRepo.Close()
+
 		},
 	}, nil
 }

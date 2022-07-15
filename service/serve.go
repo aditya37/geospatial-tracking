@@ -16,6 +16,7 @@ func serve(grpc *grpc.Server, httpHandler http.Handler) error {
 	lis, err := net.Listen("tcp",
 		fmt.Sprintf(":%s", getenv.GetString("PORT", "")),
 	)
+
 	if err != nil {
 		return err
 	}
