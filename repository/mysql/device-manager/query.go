@@ -27,6 +27,6 @@ const (
 		signal_strength=?
 	WHERE id =? AND device_id = ?`
 	// Read....
-	mysqlQueryGetDeviceByDeviceId       = `SELECT device_id FROM mst_device WHERE device_id = ?`
+	mysqlQueryGetDeviceByDeviceId       = `SELECT device_id,mac_address,device_type,chip_id,created_at FROM mst_device WHERE device_id = ?`
 	mysqlQueryGetLastTrackingByInterval = `SELECT status,id FROM trx_gps_tracking WHERE device_id = ? AND modified_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)`
 )

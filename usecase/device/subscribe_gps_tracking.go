@@ -19,8 +19,12 @@ func (du *DeviceUsecase) SubscribeGPSTracking(c mqtt.Client, m mqtt.Message) {
 	payload, err := du.unmarshallTrackingPayload(m.Payload())
 	if err != nil {
 		util.Logger().Error(err)
+		go du.gpChannelStream.StoreTrackingToStreamChan(payload, err)
 		return
 	}
+
+	// stream gps data to channel with non blocking
+	go du.gpChannelStream.StoreTrackingToStreamChan(payload, nil)
 
 	status, err := du.getLastTrackingStatus(
 		ctx,
@@ -37,8 +41,16 @@ func (du *DeviceUsecase) SubscribeGPSTracking(c mqtt.Client, m mqtt.Message) {
 				util.Logger().Info(fmt.Sprintf("Insert tracking from %s", payload.DeviceId))
 				if err := du.insertGPSTracking(ctx, payload); err != nil {
 					util.Logger().Error(err)
+					// publish to channel gps tracking forwader
+					du.gpsChanForward.Publish(
+						usecase.ForwardTrackingPayload{
+							Message: err.Error(),
+							GpsData: payload,
+						},
+					)
 					return
 				}
+				du.publishChanTrackingForward(payload)
 				m.Ack()
 				return
 			}
@@ -56,18 +68,42 @@ func (du *DeviceUsecase) SubscribeGPSTracking(c mqtt.Client, m mqtt.Message) {
 			util.Logger().Info(fmt.Sprintf("Insert tracking with last status %s from %s", payload.DeviceId, status.Status))
 			if err := du.insertGPSTracking(ctx, payload); err != nil {
 				util.Logger().Error(err)
+				du.gpsChanForward.Publish(
+					usecase.ForwardTrackingPayload{
+						Message: err.Error(),
+						GpsData: payload,
+					},
+				)
 				return
 			}
+			du.publishChanTrackingForward(payload)
 			m.Ack()
 		}
 	} else {
 		// do update
 		util.Logger().Info(fmt.Sprintf("Do tracking from %s", payload.DeviceId))
 		if err := du.updateGPSTracking(ctx, payload, status.Id); err != nil {
+			util.Logger().Error(err)
+			du.gpsChanForward.Publish(
+				usecase.ForwardTrackingPayload{
+					Message: err.Error(),
+					GpsData: payload,
+				},
+			)
 			return
 		}
+		du.publishChanTrackingForward(payload)
 		m.Ack()
 	}
+}
+
+// publishChanTrackingForward
+func (du *DeviceUsecase) publishChanTrackingForward(payload usecase.MqttGpsTrackingPayload) {
+	du.gpsChanForward.Publish(
+		usecase.ForwardTrackingPayload{
+			GpsData: payload,
+		},
+	)
 }
 
 // validateRequestPayloadBeforeInsert

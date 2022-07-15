@@ -1,13 +1,42 @@
 syntax="proto3";
 package proto;
 option go_package="./;proto";
+import "google/protobuf/empty.proto";
 
+
+message GPSData {
+	float   lat  = 1;
+	float   long = 2;
+	float   speed = 3;
+}
+message Device {
+	string mac_address = 1;
+	string created_at  = 2;
+	string device_type = 3;
+	int64  chip_id = 4;
+}
+message Sensor {
+	float signal_strength = 1;
+	float temp = 2;
+}
+
+// GetDeviceLogByDeviceId...
 message RequestGetDeviceLogByDeviceId {
 	string device_id = 1;
 }
 message ResponseGetDeviceLogByDeviceId {
 }
 
+// response stream gpstracking
+message ResponseStreamGPSTracking {
+	string  device_id=1;
+	string  status=2;
+	GPSData gps_data = 3;
+	Device  device_info = 4;
+	Sensor  sensors = 5;
+}
+
 service Geotracking {
 	rpc GetDeviceLogByDeviceId(RequestGetDeviceLogByDeviceId) returns (ResponseGetDeviceLogByDeviceId);
+	rpc GetGPSTracking(google.protobuf.Empty) returns (stream ResponseStreamGPSTracking);
 }
