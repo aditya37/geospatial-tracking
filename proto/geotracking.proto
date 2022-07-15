@@ -1,0 +1,13 @@
+syntax="proto3";
+package proto;
+option go_package="./;proto";
+
+message RequestGetDeviceLogByDeviceId {
+	string device_id = 1;
+}
+message ResponseGetDeviceLogByDeviceId {
+}
+
+service Geotracking {
+	rpc GetDeviceLogByDeviceId(RequestGetDeviceLogByDeviceId) returns (ResponseGetDeviceLogByDeviceId);
+}
