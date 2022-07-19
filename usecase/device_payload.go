@@ -24,7 +24,7 @@ type (
 		Deviceid   string `json:"device_id"`
 		MacAddress string `json:"mac_address"`
 		DeviceType string `json:"device_type"`
-		ChipId     int64  `json:"chip_id"`
+		ChipId     string `json:"chip_id"`
 		I2cAddress string `json:"i2c_address"`
 		Timestamp  int64  `json:"timestamp"`
 	}
@@ -66,7 +66,8 @@ type (
 		Angle    float64 `json:"angle"`
 	}
 	Sensor struct {
-		Temp float64 `json:"temp"`
+		Temp   float64 `json:"temp"`
+		Signal float64 `json:"signal"`
 	}
 	MQTTRespTracking struct {
 		DeviceId    string  `json:"device_id"`

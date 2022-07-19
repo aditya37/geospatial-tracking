@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	logger "github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
 	"github.com/aditya37/geospatial-tracking/repository"
 	"github.com/aditya37/geospatial-tracking/usecase"
-	config "github.com/aditya37/get-env"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -20,7 +20,6 @@ func (du *DeviceUsecase) SubscribeRegisterDevice(c mqtt.Client, m mqtt.Message) 
 		logger.Logger().Error(err)
 		return
 	}
-
 	// check device is registered or not
 	if _, err := du.deviceManagerRepo.GetDeviceByDeviceId(ctx, payload.Deviceid); err != nil {
 		logger.Logger().Error(err)
@@ -29,7 +28,7 @@ func (du *DeviceUsecase) SubscribeRegisterDevice(c mqtt.Client, m mqtt.Message) 
 				logger.Logger().Error(err)
 				// publish resp to device
 				go du.publishRespRegister(
-					du.getTopicRegisterDeviceResp(payload.Deviceid),
+					"/device/resp/register",
 					usecase.MqttRespRegisterDevice{
 						Deviceid: payload.Deviceid,
 						Message:  err.Error(),
@@ -41,7 +40,7 @@ func (du *DeviceUsecase) SubscribeRegisterDevice(c mqtt.Client, m mqtt.Message) 
 			}
 
 			go du.publishRespRegister(
-				du.getTopicRegisterDeviceResp(payload.Deviceid),
+				"/device/resp/register",
 				usecase.MqttRespRegisterDevice{
 					Deviceid: payload.Deviceid,
 					Message:  "Register Device Success",
@@ -53,7 +52,7 @@ func (du *DeviceUsecase) SubscribeRegisterDevice(c mqtt.Client, m mqtt.Message) 
 		}
 	}
 	go du.publishRespRegister(
-		du.getTopicRegisterDeviceResp(payload.Deviceid),
+		"/device/resp/register",
 		usecase.MqttRespRegisterDevice{
 			Deviceid: payload.Deviceid,
 			Message:  "Device id is valid",
@@ -61,16 +60,6 @@ func (du *DeviceUsecase) SubscribeRegisterDevice(c mqtt.Client, m mqtt.Message) 
 		},
 	)
 	m.Ack()
-}
-
-// getTopicRegisterDeviceResp...
-func (du *DeviceUsecase) getTopicRegisterDeviceResp(deviceId string) string {
-	topicName := fmt.Sprintf("%s/%s",
-		config.GetString("MQTT_TOPIC_RESP_REGISTER_DEVICE", "/device/resp/register"),
-		deviceId,
-	)
-	logger.Logger().Info(fmt.Sprintf("Publish register response to %s", topicName))
-	return topicName
 }
 
 // registerDevice....
@@ -82,7 +71,7 @@ func (du *DeviceUsecase) registerDevice(ctx context.Context, payload usecase.Mqt
 			DeviceId:   payload.Deviceid,
 			DeviceType: payload.DeviceType,
 			MacAddress: payload.MacAddress,
-			ChipId:     int(payload.ChipId),
+			ChipId:     payload.ChipId,
 			I2cAddress: payload.I2cAddress,
 		},
 	); err != nil {
@@ -104,7 +93,9 @@ func (du *DeviceUsecase) unmarshallRegisterPayload(data []byte) (usecase.MqttReg
 
 // PublishNotify....
 func (du *DeviceUsecase) publishRespRegister(topic string, data usecase.MqttRespRegisterDevice) error {
+	logger.Logger().Info(fmt.Sprintf("Publish register response to %s", topic))
 	j, _ := json.Marshal(data)
+	log.Println("resp ", string(j))
 	if err := du.mqttmanager.Publish(topic, 1, false, j); err != nil {
 		return err
 	}

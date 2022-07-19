@@ -27,7 +27,7 @@ func (du *DeviceUsecase) GetDeviceDetailByDeviceId(ctx context.Context, deviceId
 		result := proto.Device{
 			MacAddress: device.MacAddress,
 			DeviceType: device.DeviceType,
-			ChipId:     int64(device.ChipId),
+			ChipId:     device.ChipId,
 			CreatedAt:  device.CreatedAt.Format(time.RFC3339),
 		}
 		du.setCacheDeviceDetail(ctx, deviceId, result)

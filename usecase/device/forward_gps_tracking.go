@@ -2,14 +2,12 @@ package device
 
 import (
 	"encoding/json"
-	"log"
 
 	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/usecase"
 )
 
 func (du *DeviceUsecase) ForwardGPSTracking(m *usecase.ForwardTrackingPayload) {
-	log.Println(m.Message)
 	if m.Message != "" {
 		msg := du.mappingMessage(m)
 		payload := usecase.MQTTRespTracking{
@@ -36,8 +34,32 @@ func (du *DeviceUsecase) ForwardGPSTracking(m *usecase.ForwardTrackingPayload) {
 		}
 	} else {
 		ms := du.mappingMessageByStatus(m)
-		j, _ := json.MarshalIndent(ms, "", " ")
-		log.Println(string(j))
+		payload := usecase.MQTTRespTracking{
+			DeviceId:    m.GpsData.DeviceId,
+			Status:      m.GpsData.Status,
+			RespMessage: ms,
+			GPSData: usecase.GPSData{
+				Lat:      m.GpsData.Lat,
+				Long:     m.GpsData.Long,
+				Altitude: m.GpsData.Altitude,
+				Speed:    m.GpsData.Speed,
+				Angle:    m.GpsData.Angle,
+			},
+			Sensors: usecase.Sensor{
+				Temp:   m.GpsData.Temp,
+				Signal: m.GpsData.Signal,
+			},
+		}
+		jsonMsg, _ := json.Marshal(payload)
+		if err := du.mqttmanager.Publish(
+			"/device/resp/tracking",
+			byte(1),
+			false,
+			jsonMsg,
+		); err != nil {
+			util.Logger().Error(err)
+			return
+		}
 	}
 }
 

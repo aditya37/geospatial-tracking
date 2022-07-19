@@ -7,7 +7,7 @@ type (
 		DeviceId   string
 		MacAddress string
 		DeviceType string
-		ChipId     int
+		ChipId     string
 		I2cAddress string
 		CreatedAt  time.Time
 		ModifiedAt time.Time
