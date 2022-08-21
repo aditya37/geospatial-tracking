@@ -35,6 +35,7 @@ type (
 		Message  string `json:"message"`
 	}
 
+	// GPS Tracking from device
 	MqttGpsTrackingPayload struct {
 		DeviceId  string  `json:"device_id"`
 		Speed     float64 `json:"speed"`
@@ -44,16 +45,19 @@ type (
 		Long      float64 `json:"long"`
 		Signal    float64 `json:"signal"`
 		Angle     float64 `json:"angle"`
-		Timestamp int64   `json:"timestamp"`
 		Altitude  float64 `json:"altitude"`
+		Timestamp int64   `json:"timestamp"`
 	}
 
+	// Payload for forward from gps tracking topic
+	// to channel...
 	ForwardTrackingPayload struct {
 		Message string                 `json:"message"`
 		GpsData MqttGpsTrackingPayload `json:"gps_data"`
 	}
 
 	// MQTTRespTracking....
+	// Payload for send to device or mqtt
 	Message struct {
 		Value  string `json:"value"`
 		Reason string `json:"reason"`
