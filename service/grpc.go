@@ -29,7 +29,8 @@ type Grpc interface {
 
 type grpcSvc struct {
 	grpcTrackingDlv *grpc_dv.Trackingdeliv
-	close           func()
+
+	close func()
 }
 
 func NewGrpc() (Grpc, error) {
@@ -156,7 +157,6 @@ func NewGrpc() (Grpc, error) {
 			log.Println("Take rest broh!!!, all connection has been closed")
 			deviceManagerRepo.Close()
 			cacheManagerRepo.Close()
-
 		},
 	}, nil
 }

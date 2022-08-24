@@ -27,12 +27,12 @@ func NewTrackingDelivery(
 	}
 }
 
-//
+//GetDeviceLogByDeviceId....
 func (td *Trackingdeliv) GetDeviceLogByDeviceId(ctx context.Context, req *proto.RequestGetDeviceLogByDeviceId) (*proto.ResponseGetDeviceLogByDeviceId, error) {
 	return &proto.ResponseGetDeviceLogByDeviceId{}, nil
 }
 
-//
+//GetGPSTracking...
 func (td *Trackingdeliv) GetGPSTracking(req *emptypb.Empty, stream proto.Geotracking_GetGPSTrackingServer) error {
 	streamCtx := stream.Context()
 	for {
@@ -69,4 +69,11 @@ func (td *Trackingdeliv) GetGPSTracking(req *emptypb.Empty, stream proto.Geotrac
 			return nil
 		}
 	}
+}
+func (td *Trackingdeliv) GetDeviceCounter(ctx context.Context, in *emptypb.Empty) (*proto.ResponseGetDeviceCounter, error) {
+	resp, err := td.deviceCase.GetDeviceCounter(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }

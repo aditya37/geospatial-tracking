@@ -36,7 +36,14 @@ message ResponseStreamGPSTracking {
 	Sensor  sensors = 5;
 }
 
+// ResponseGetDeviceCounter...
+message ResponseGetDeviceCounter {
+     int64 activeted_device  = 1;
+     int64 recorded_tracking = 2;
+}
+
 service Geotracking {
 	rpc GetDeviceLogByDeviceId(RequestGetDeviceLogByDeviceId) returns (ResponseGetDeviceLogByDeviceId);
 	rpc GetGPSTracking(google.protobuf.Empty) returns (stream ResponseStreamGPSTracking);
+	rpc GetDeviceCounter(google.protobuf.Empty) returns (ResponseGetDeviceCounter);
 }
