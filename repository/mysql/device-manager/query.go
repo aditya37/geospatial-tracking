@@ -29,4 +29,5 @@ const (
 	// Read....
 	mysqlQueryGetDeviceByDeviceId       = `SELECT device_id,mac_address,device_type,chip_id,created_at FROM mst_device WHERE device_id = ?`
 	mysqlQueryGetLastTrackingByInterval = `SELECT status,id FROM trx_gps_tracking WHERE device_id = ? AND modified_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)`
+	mysqlQueryGetCounter                = `SELECT COUNT(id) AS recorded_tracking FROM trx_gps_tracking WHERE status="STOP"`
 )

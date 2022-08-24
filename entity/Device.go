@@ -12,4 +12,8 @@ type (
 		CreatedAt  time.Time
 		ModifiedAt time.Time
 	}
+	ResultGetCount struct {
+		ActivatedDevice  int64
+		RecordedTracking int64
+	}
 )
