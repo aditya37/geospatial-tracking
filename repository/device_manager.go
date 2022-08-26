@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/aditya37/geospatial-tracking/entity"
+	"github.com/aditya37/geospatial-tracking/proto"
 )
 
 var (
@@ -21,8 +22,10 @@ type DeviceManager interface {
 	InsertDevice(ctx context.Context, data entity.Device) error
 	InsertTracking(ctx context.Context, data entity.GPSTracking) (int64, error)
 	UpdateTracking(ctx context.Context, data entity.GPSTracking) error
+	InsertDeviceLog(ctx context.Context, data entity.DeviceLog) error
 	// Read....
 	GetDeviceByDeviceId(ctx context.Context, deviceid string) (*entity.Device, error)
 	GetLastTrackingByInterval(ctx context.Context, deviceid string, interval int) (*entity.GPSTracking, error)
 	GetDeviceCounter(ctx context.Context) (*entity.ResultGetCount, error)
+	GetDeviceLogs(ctx context.Context, data *proto.RequestGetDeviceLogs) ([]*entity.DeviceLog, error)
 }

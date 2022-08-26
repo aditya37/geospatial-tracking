@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -11,12 +12,13 @@ import (
 	"github.com/aditya37/geospatial-tracking/infra"
 	"github.com/aditya37/geospatial-tracking/proto"
 	"github.com/aditya37/geospatial-tracking/repository"
+	getenv "github.com/aditya37/get-env"
 
 	mqtt_manager "github.com/aditya37/geospatial-tracking/repository/mqtt"
 
-	cache_manager "github.com/aditya37/geospatial-tracking/repository/redis"
-
+	gcp_manager "github.com/aditya37/geospatial-tracking/repository/gcppubsub"
 	device_manager "github.com/aditya37/geospatial-tracking/repository/mysql/device-manager"
+	cache_manager "github.com/aditya37/geospatial-tracking/repository/redis"
 	device_case "github.com/aditya37/geospatial-tracking/usecase/device"
 	config "github.com/aditya37/get-env"
 	"google.golang.org/grpc"
@@ -105,6 +107,19 @@ func NewGrpc() (Grpc, error) {
 		})
 		redisInfra = infra.GetRedisInstance()
 	}
+	// gcppubsubInstance...
+	infra.NewGcpPubsubInstance(
+		context.Background(),
+		getenv.GetString("GCP_PROJECT_ID", ""),
+	)
+	gcpPubsubInstane := infra.GetGcpPubsubInstance()
+	if gcpPubsubInstane == nil {
+		infra.NewGcpPubsubInstance(
+			context.Background(),
+			getenv.GetString("GCP_PROJECT_ID", ""),
+		)
+		gcpPubsubInstane = infra.GetGcpPubsubInstance()
+	}
 
 	// mqtt repo
 	mqttManager, err := mqtt_manager.NewMqttManager(mqttClientInfra)
@@ -124,12 +139,16 @@ func NewGrpc() (Grpc, error) {
 	gpsChanForward := repository.NewTrackingForward()
 	go gpsChannelStream.Run()
 
+	// gcppubsubManager...
+	gcpPubsubManager := gcp_manager.NewGcpPubsubManager(gcpPubsubInstane)
+
 	deviceUsecase := device_case.NewDeviceUsecase(
 		mqttManager,
 		deviceManagerRepo,
 		gpsChannelStream,
 		cacheManagerRepo,
 		gpsChanForward,
+		gcpPubsubManager,
 	)
 	gpsChanForward.Subscribe(deviceUsecase.ForwardGPSTracking)
 
@@ -148,7 +167,12 @@ func NewGrpc() (Grpc, error) {
 		byte(2),
 		deviceUsecase.SubscribeGPSTracking,
 	)
-
+	// subscribe mqtt topic device logs..
+	go mqttManager.Subscribe(
+		"/device/logs",
+		byte(0),
+		deviceUsecase.SubscribeDeviceLog,
+	)
 	grpcTrackingDeliv := grpc_dv.NewTrackingDelivery(deviceUsecase, gpsChannelStream)
 
 	return &grpcSvc{
@@ -157,6 +181,7 @@ func NewGrpc() (Grpc, error) {
 			log.Println("Take rest broh!!!, all connection has been closed")
 			deviceManagerRepo.Close()
 			cacheManagerRepo.Close()
+			gcpPubsubManager.Close()
 		},
 	}, nil
 }

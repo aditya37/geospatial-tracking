@@ -2,7 +2,7 @@ syntax="proto3";
 package proto;
 option go_package="./;proto";
 import "google/protobuf/empty.proto";
-
+import "google/protobuf/timestamp.proto";
 
 message GPSData {
 	float   lat  = 1;
@@ -18,6 +18,18 @@ message Device {
 message Sensor {
 	float signal_strength = 1;
 	float temp = 2;
+}
+
+message Paging {
+	int64 page = 1;
+	int64 item_per_page = 2;
+}
+
+message LogItem {
+	string device_id = 1;
+	string status 	  = 2;
+	string reason 	  = 3;
+	string recorded_at = 4;
 }
 
 // GetDeviceLogByDeviceId...
@@ -42,8 +54,20 @@ message ResponseGetDeviceCounter {
      int64 recorded_tracking = 2;
 }
 
+// RequestGetDeviceLogs...
+message RequestGetDeviceLogs {
+	Paging paging = 1;
+	google.protobuf.Timestamp recorded_at = 2;
+}
+
+// ResponseGetDeviceLogs...
+message ResponseGetDeviceLogs {
+	repeated LogItem device_logs = 1;
+}
+
 service Geotracking {
 	rpc GetDeviceLogByDeviceId(RequestGetDeviceLogByDeviceId) returns (ResponseGetDeviceLogByDeviceId);
 	rpc GetGPSTracking(google.protobuf.Empty) returns (stream ResponseStreamGPSTracking);
 	rpc GetDeviceCounter(google.protobuf.Empty) returns (ResponseGetDeviceCounter);
+	rpc GetDeviceLogs(RequestGetDeviceLogs) returns (ResponseGetDeviceLogs);
 }

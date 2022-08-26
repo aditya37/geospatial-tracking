@@ -10,6 +10,7 @@ type DeviceUsecase struct {
 	gpChannelStream   *repository.GPSChannelStream
 	cacheManager      repository.CacheManager
 	gpsChanForward    *repository.TrackingForward
+	gcpManager        repository.Pubsub
 }
 
 func NewDeviceUsecase(
@@ -18,6 +19,7 @@ func NewDeviceUsecase(
 	gpsChannelStream *repository.GPSChannelStream,
 	cacheManager repository.CacheManager,
 	gpsChanForward *repository.TrackingForward,
+	gcpManager repository.Pubsub,
 ) *DeviceUsecase {
 	return &DeviceUsecase{
 		mqttmanager:       mqttmanager,
@@ -25,5 +27,6 @@ func NewDeviceUsecase(
 		gpChannelStream:   gpsChannelStream,
 		cacheManager:      cacheManager,
 		gpsChanForward:    gpsChanForward,
+		gcpManager:        gcpManager,
 	}
 }

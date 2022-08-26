@@ -13,6 +13,8 @@ var (
 	StatusGPSTrackingStart         Status = "START_RECORD_TRACKING"
 	StatusGPSTrackingStop          Status = "STOP"
 	StatusGPSTracingRecordTracking Status = "TRACKING_RECORDED"
+	StatusLowSignal                Status = "LOW_SIGNAL"
+	StatusHeartBeat                Status = "HEARTBEAT"
 )
 
 func (s Status) ToString() string {
@@ -79,5 +81,14 @@ type (
 		RespMessage Message `json:"message"`
 		GPSData     GPSData `json:"gps_data"`
 		Sensors     Sensor  `json:"sensor_data"`
+	}
+
+	// DeviceLogPayload...
+	DeviceLogPayload struct {
+		DeviceId       string  `json:"device_id"`
+		Status         string  `json:"status"`
+		Reason         string  `json:"reason"`
+		SignalStrength float64 `json:"signal_strength"`
+		ReocordedAt    int64   `json:"recorded_at"`
 	}
 )
