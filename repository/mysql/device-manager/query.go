@@ -26,8 +26,16 @@ const (
 		speed=?,
 		signal_strength=?
 	WHERE id =? AND device_id = ?`
+	mysqlQueryInsertDeviceLog = `INSERT INTO trx_device_log(
+		   device_id,
+		   status,
+		   reason,
+		   signal_strength,
+		   recorded_at
+	)VALUES(?,?,?,?,?)`
 	// Read....
 	mysqlQueryGetDeviceByDeviceId       = `SELECT device_id,mac_address,device_type,chip_id,created_at FROM mst_device WHERE device_id = ?`
 	mysqlQueryGetLastTrackingByInterval = `SELECT status,id FROM trx_gps_tracking WHERE device_id = ? AND modified_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)`
 	mysqlQueryGetCounter                = `SELECT COUNT(id) AS recorded_tracking FROM trx_gps_tracking WHERE status="STOP"`
+	mysqlQueryGetDeviceLogs             = `SELECT device_id,status,reason,recorded_at FROM trx_device_log WHERE DATE(recorded_at) = DATE(?) ORDER BY recorded_at DESC LIMIT ?,?`
 )

@@ -16,4 +16,12 @@ type (
 		ActivatedDevice  int64
 		RecordedTracking int64
 	}
+	DeviceLog struct {
+		Id             int64
+		DeviceId       string
+		Status         string
+		Reason         string
+		SignalStrength float64
+		RecordedAt     time.Time
+	}
 )

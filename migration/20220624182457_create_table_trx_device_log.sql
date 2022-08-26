@@ -7,7 +7,6 @@ CREATE TABLE `trx_device_log` (
   `status` varchar(100) NOT NULL,
   `reason` varchar(200) NOT NULL,
   `signal_strength` int NOT NULL DEFAULT '0',
-  `topic_name` varchar(200) NOT NULL,
   `recorded_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 )

@@ -70,8 +70,25 @@ func (td *Trackingdeliv) GetGPSTracking(req *emptypb.Empty, stream proto.Geotrac
 		}
 	}
 }
+
+// GetDeviceCounter...
 func (td *Trackingdeliv) GetDeviceCounter(ctx context.Context, in *emptypb.Empty) (*proto.ResponseGetDeviceCounter, error) {
 	resp, err := td.deviceCase.GetDeviceCounter(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// GetDeviceLogs...
+func (td *Trackingdeliv) GetDeviceLogs(ctx context.Context, in *proto.RequestGetDeviceLogs) (*proto.ResponseGetDeviceLogs, error) {
+	if in.Paging.ItemPerPage == 0 {
+		in.Paging.ItemPerPage = 5
+	}
+	if in.Paging.Page == 0 {
+		in.Paging.Page = 1
+	}
+	resp, err := td.deviceCase.GetDeviceLogs(ctx, in)
 	if err != nil {
 		return nil, err
 	}
