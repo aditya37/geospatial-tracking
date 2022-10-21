@@ -4,6 +4,10 @@ option go_package="./;proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
+enum DeviceType {
+	IOT = 0;
+	ANDROID = 1;
+}
 message GPSData {
 	float   lat  = 1;
 	float   long = 2;
@@ -12,7 +16,7 @@ message GPSData {
 message Device {
 	string mac_address = 1;
 	string created_at  = 2;
-	string device_type = 3;
+	DeviceType device_type = 3;
 	string chip_id = 4;
 }
 message Sensor {
@@ -49,9 +53,17 @@ message ResponseStreamGPSTracking {
 }
 
 // ResponseGetDeviceCounter...
+// item detect device...
+message DetectDeviceItem {
+    string device_type =  1;
+    int64  count 	   =  2;
+    string last_detect =  3;
+}
+
 message ResponseGetDeviceCounter {
-     int64 activeted_device  = 1;
-     int64 recorded_tracking = 2;
+     int64    activeted_device  = 1;
+     int64    recorded_tracking = 2;
+     repeated DetectDeviceItem detect_device = 3;
 }
 
 // RequestGetDeviceLogs...

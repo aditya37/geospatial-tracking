@@ -173,6 +173,12 @@ func NewGrpc() (Grpc, error) {
 		byte(0),
 		deviceUsecase.SubscribeDeviceLog,
 	)
+	// SubscribeDeviceDetectdInGeofence
+	go mqttManager.Subscribe(
+		config.GetString("MQTT_TOPIC_SUBSCRIBE_DEVICE_DETECT", "/device/geofence/detect"),
+		byte(1),
+		deviceUsecase.SubscribeDeviceDetect,
+	)
 	grpcTrackingDeliv := grpc_dv.NewTrackingDelivery(deviceUsecase, gpsChannelStream)
 
 	return &grpcSvc{

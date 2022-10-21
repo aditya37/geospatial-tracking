@@ -4,9 +4,10 @@ import "time"
 
 type (
 	Device struct {
+		Id         int64
 		DeviceId   string
 		MacAddress string
-		DeviceType string
+		DeviceType int
 		ChipId     string
 		I2cAddress string
 		CreatedAt  time.Time
@@ -15,6 +16,10 @@ type (
 	ResultGetCount struct {
 		ActivatedDevice  int64
 		RecordedTracking int64
+		DetectCount      int64
+		DeviceId         string
+		Type             string
+		LastDetect       time.Time
 	}
 	DeviceLog struct {
 		Id             int64
@@ -23,5 +28,13 @@ type (
 		Reason         string
 		SignalStrength float64
 		RecordedAt     time.Time
+	}
+	DetectDevice struct {
+		Id       int64
+		DeviceId int64
+		Detect   string
+		Lat      float64
+		Long     float64
+		DetectAt time.Time
 	}
 )

@@ -23,10 +23,11 @@ func (du *DeviceUsecase) GetDeviceDetailByDeviceId(ctx context.Context, deviceId
 			util.Logger().Error(err)
 			return proto.Device{}, err
 		}
+
 		// set to redis
 		result := proto.Device{
 			MacAddress: device.MacAddress,
-			DeviceType: device.DeviceType,
+			DeviceType: proto.DeviceType(device.DeviceType),
 			ChipId:     device.ChipId,
 			CreatedAt:  device.CreatedAt.Format(time.RFC3339),
 		}

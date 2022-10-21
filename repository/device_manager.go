@@ -23,6 +23,9 @@ type DeviceManager interface {
 	InsertTracking(ctx context.Context, data entity.GPSTracking) (int64, error)
 	UpdateTracking(ctx context.Context, data entity.GPSTracking) error
 	InsertDeviceLog(ctx context.Context, data entity.DeviceLog) error
+	InsertDeviceDetect(ctx context.Context, data entity.DetectDevice) error
+	GetCountDeviceDetect(ctx context.Context) ([]*proto.DetectDeviceItem, error)
+
 	// Read....
 	GetDeviceByDeviceId(ctx context.Context, deviceid string) (*entity.Device, error)
 	GetLastTrackingByInterval(ctx context.Context, deviceid string, interval int) (*entity.GPSTracking, error)

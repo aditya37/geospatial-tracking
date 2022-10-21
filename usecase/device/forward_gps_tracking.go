@@ -1,19 +1,31 @@
 package device
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/usecase"
 )
 
+// forward/response data tracking to device
 func (du *DeviceUsecase) ForwardGPSTracking(m *usecase.ForwardTrackingPayload) {
+	ctx := context.Background()
 	if m.Message != "" {
 		msg := du.mappingMessage(m)
+
+		device, err := du.deviceManagerRepo.GetDeviceByDeviceId(ctx, m.GpsData.DeviceId)
+		if err != nil {
+			util.Logger().Error(err)
+			return
+		}
+
 		payload := usecase.MQTTRespTracking{
 			DeviceId:    m.GpsData.DeviceId,
 			Status:      m.GpsData.Status,
+			Id:          device.Id,
 			RespMessage: msg,
+			DeviceType:  device.DeviceType,
 			GPSData: usecase.GPSData{
 				Lat:      m.GpsData.Lat,
 				Long:     m.GpsData.Long,
@@ -34,10 +46,19 @@ func (du *DeviceUsecase) ForwardGPSTracking(m *usecase.ForwardTrackingPayload) {
 		}
 	} else {
 		ms := du.mappingMessageByStatus(m)
+
+		device, err := du.deviceManagerRepo.GetDeviceByDeviceId(ctx, m.GpsData.DeviceId)
+		if err != nil {
+			util.Logger().Error(err)
+			return
+		}
+
 		payload := usecase.MQTTRespTracking{
 			DeviceId:    m.GpsData.DeviceId,
 			Status:      m.GpsData.Status,
 			RespMessage: ms,
+			Id:          device.Id,
+			DeviceType:  device.DeviceType,
 			GPSData: usecase.GPSData{
 				Lat:      m.GpsData.Lat,
 				Long:     m.GpsData.Long,

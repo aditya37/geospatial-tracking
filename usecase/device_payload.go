@@ -25,7 +25,7 @@ type (
 	MqttRegisterDevicePayload struct {
 		Deviceid   string `json:"device_id"`
 		MacAddress string `json:"mac_address"`
-		DeviceType string `json:"device_type"`
+		DeviceType int    `json:"device_type"`
 		ChipId     string `json:"chip_id"`
 		I2cAddress string `json:"i2c_address"`
 		Timestamp  int64  `json:"timestamp"`
@@ -77,6 +77,8 @@ type (
 	}
 	MQTTRespTracking struct {
 		DeviceId    string  `json:"device_id"`
+		DeviceType  int     `json:"device_type"`
+		Id          int64   `json:"id"`
 		Status      string  `json:"status"`
 		RespMessage Message `json:"message"`
 		GPSData     GPSData `json:"gps_data"`
@@ -90,5 +92,14 @@ type (
 		Reason         string  `json:"reason"`
 		SignalStrength float64 `json:"signal_strength"`
 		ReocordedAt    int64   `json:"recorded_at"`
+	}
+
+	// PayloadInsertDeviceDetect
+	PayloadInsertDeviceDetect struct {
+		DeviceId   int64   `json:"device_id"`
+		Detect     string  `json:"detect"`
+		Lat        float64 `json:"lat"`
+		Long       float64 `json:"long"`
+		DetectTime int64   `json:"detect_time"`
 	}
 )

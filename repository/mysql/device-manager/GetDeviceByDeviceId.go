@@ -20,6 +20,8 @@ func (dm *device) GetDeviceByDeviceId(ctx context.Context, deviceid string) (*en
 		&record.DeviceType,
 		&record.ChipId,
 		&record.CreatedAt,
+		&record.Id,
+		&record.DeviceType,
 	); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, repository.ErrDeviceNotFound

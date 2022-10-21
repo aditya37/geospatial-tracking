@@ -3,11 +3,13 @@ package device
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
 	logger "github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
+	"github.com/aditya37/geospatial-tracking/proto"
 	"github.com/aditya37/geospatial-tracking/repository"
 	"github.com/aditya37/geospatial-tracking/usecase"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -64,12 +66,17 @@ func (du *DeviceUsecase) SubscribeRegisterDevice(c mqtt.Client, m mqtt.Message) 
 
 // registerDevice....
 func (du *DeviceUsecase) registerDevice(ctx context.Context, payload usecase.MqttRegisterDevicePayload) error {
+	if _, ok := proto.DeviceType_name[int32(payload.DeviceType)]; !ok {
+		return errors.New("unknow device type")
+	}
 	// do insert or register device
 	if err := du.deviceManagerRepo.InsertDevice(
 		ctx,
 		entity.Device{
-			DeviceId:   payload.Deviceid,
-			DeviceType: payload.DeviceType,
+			DeviceId: payload.Deviceid,
+			DeviceType: int(
+				proto.DeviceType(payload.DeviceType),
+			),
 			MacAddress: payload.MacAddress,
 			ChipId:     payload.ChipId,
 			I2cAddress: payload.I2cAddress,
