@@ -33,8 +33,18 @@ const (
 		   signal_strength,
 		   recorded_at
 	)VALUES(?,?,?,?,?)`
+	mysqlQueryInsertDeviceDetect   = "INSERT INTO trx_detect_device(device_id,detect,lat,`long`,detected_at)VALUES(?,?,?,?,?)"
+	mysqlQueryGetCountDeviceDetect = `SELECT
+		count(td.detect) AS count,
+		md.device_id,
+		mt.type,(
+			SELECT detected_at FROM trx_detect_device WHERE device_id = md.id LIMIT 1
+		) AS last_detect
+   	FROM trx_detect_device td 
+   	INNER JOIN mst_device md ON md.id = td.device_id
+   	INNER JOIN mst_device_type mt ON md.device_type = mt.id GROUP BY md.device_id`
 	// Read....
-	mysqlQueryGetDeviceByDeviceId       = `SELECT device_id,mac_address,device_type,chip_id,created_at FROM mst_device WHERE device_id = ?`
+	mysqlQueryGetDeviceByDeviceId       = `SELECT device_id,mac_address,device_type,chip_id,created_at,id,device_type FROM mst_device WHERE device_id = ?`
 	mysqlQueryGetLastTrackingByInterval = `SELECT status,id FROM trx_gps_tracking WHERE device_id = ? AND modified_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)`
 	mysqlQueryGetCounter                = `SELECT COUNT(id) AS recorded_tracking FROM trx_gps_tracking WHERE status="STOP"`
 	mysqlQueryGetDeviceLogs             = `SELECT device_id,status,reason,recorded_at FROM trx_device_log WHERE DATE(recorded_at) = DATE(?) ORDER BY recorded_at DESC LIMIT ?,?`
