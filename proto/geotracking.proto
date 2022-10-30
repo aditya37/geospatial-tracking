@@ -77,9 +77,19 @@ message ResponseGetDeviceLogs {
 	repeated LogItem device_logs = 1;
 }
 
+// RequestMonitoringDeviceById...
+message RequestMonitoringDeviceById {
+	string device_id = 1;
+}
+message ResponseMonitoringDeviceById {
+	LogItem device_log   = 1;
+	GPSData gps_tracking = 2;
+}
+
 service Geotracking {
 	rpc GetDeviceLogByDeviceId(RequestGetDeviceLogByDeviceId) returns (ResponseGetDeviceLogByDeviceId);
 	rpc GetGPSTracking(google.protobuf.Empty) returns (stream ResponseStreamGPSTracking);
 	rpc GetDeviceCounter(google.protobuf.Empty) returns (ResponseGetDeviceCounter);
 	rpc GetDeviceLogs(RequestGetDeviceLogs) returns (ResponseGetDeviceLogs);
+	rpc MonitoringDeviceById(RequestMonitoringDeviceById) returns (stream ResponseMonitoringDeviceById);
 }

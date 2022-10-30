@@ -9,13 +9,16 @@ import (
 	"syscall"
 
 	grpc_dv "github.com/aditya37/geospatial-tracking/delivery/gRPC"
+	grpc_deliv_mid "github.com/aditya37/geospatial-tracking/delivery/middleware"
 	"github.com/aditya37/geospatial-tracking/infra"
 	"github.com/aditya37/geospatial-tracking/proto"
 	"github.com/aditya37/geospatial-tracking/repository"
-	getenv "github.com/aditya37/get-env"
-
 	mqtt_manager "github.com/aditya37/geospatial-tracking/repository/mqtt"
+	getenv "github.com/aditya37/get-env"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
+	chan_repo "github.com/aditya37/geospatial-tracking/repository/channel"
 	gcp_manager "github.com/aditya37/geospatial-tracking/repository/gcppubsub"
 	device_manager "github.com/aditya37/geospatial-tracking/repository/mysql/device-manager"
 	cache_manager "github.com/aditya37/geospatial-tracking/repository/redis"
@@ -139,6 +142,10 @@ func NewGrpc() (Grpc, error) {
 	gpsChanForward := repository.NewTrackingForward()
 	go gpsChannelStream.Run()
 
+	// channel for monitoring device by id
+	chanDeviceMonitoringById := chan_repo.NewMonitoringDeviceById()
+	go chanDeviceMonitoringById.Run()
+
 	// gcppubsubManager...
 	gcpPubsubManager := gcp_manager.NewGcpPubsubManager(gcpPubsubInstane)
 
@@ -149,6 +156,7 @@ func NewGrpc() (Grpc, error) {
 		cacheManagerRepo,
 		gpsChanForward,
 		gcpPubsubManager,
+		chanDeviceMonitoringById,
 	)
 	gpsChanForward.Subscribe(deviceUsecase.ForwardGPSTracking)
 
@@ -179,7 +187,11 @@ func NewGrpc() (Grpc, error) {
 		byte(1),
 		deviceUsecase.SubscribeDeviceDetect,
 	)
-	grpcTrackingDeliv := grpc_dv.NewTrackingDelivery(deviceUsecase, gpsChannelStream)
+	grpcTrackingDeliv := grpc_dv.NewTrackingDelivery(
+		deviceUsecase,
+		gpsChannelStream,
+		chanDeviceMonitoringById,
+	)
 
 	return &grpcSvc{
 		grpcTrackingDlv: grpcTrackingDeliv,
@@ -201,7 +213,20 @@ func (g *grpcSvc) Run() {
 		defer g.close()
 	}()
 
-	server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.StreamInterceptor(
+			grpc_middleware.ChainStreamServer(
+				grpc_recovery.StreamServerInterceptor(),
+				grpc_deliv_mid.StreamAuthMiddleware(),
+			),
+		),
+		grpc.UnaryInterceptor(
+			grpc_middleware.ChainUnaryServer(
+				grpc_recovery.UnaryServerInterceptor(),
+				grpc_deliv_mid.UnaryAuthMiddleware(),
+			),
+		),
+	)
 	proto.RegisterGeotrackingServer(server, g.grpcTrackingDlv)
 	reflection.Register(server)
 	go func() {

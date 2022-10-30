@@ -1,0 +1,15 @@
+data will stream in monitoring:
+
+-field device log
+	- Status
+	- reason
+	- signal_strength
+	- RecordedAt
+
+- gps tracking
+	- waypoints
+	- Status
+	- signal_strength
+	- speed
+	- temp
+	- modified_at

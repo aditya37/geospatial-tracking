@@ -48,4 +48,23 @@ const (
 	mysqlQueryGetLastTrackingByInterval = `SELECT status,id FROM trx_gps_tracking WHERE device_id = ? AND modified_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)`
 	mysqlQueryGetCounter                = `SELECT COUNT(id) AS recorded_tracking FROM trx_gps_tracking WHERE status="STOP"`
 	mysqlQueryGetDeviceLogs             = `SELECT device_id,status,reason,recorded_at FROM trx_device_log WHERE DATE(recorded_at) = DATE(?) ORDER BY recorded_at DESC LIMIT ?,?`
+	mysqlQueryGetDeviceMonitoringById   = `SELECT 
+		mt.id,
+		mt.device_id,
+		IFNULL(
+			(SELECT tdl.status FROM trx_device_log tdl WHERE tdl.device_id = mt.device_id ORDER BY tdl.recorded_at DESC LIMIT 1 ),"NO DATA"
+		) AS device_log_status,
+		IFNULL(
+			(SELECT tdl.reason FROM trx_device_log tdl WHERE tdl.device_id = mt.device_id ORDER BY tdl.recorded_at DESC LIMIT 1 ),"NO DATA"
+		) AS log_reason,
+		IFNULL(
+			(SELECT tdl.signal_strength FROM trx_device_log tdl WHERE tdl.device_id = mt.device_id ORDER BY tdl.recorded_at DESC LIMIT 1 ),0
+		) AS log_signal_strength,
+		IFNULL(
+			(SELECT tdl.recorded_at FROM trx_device_log tdl WHERE tdl.device_id = mt.device_id ORDER BY tdl.recorded_at DESC LIMIT 1 ),NOW()
+		) AS log_record_at,
+		IFNULL(
+			(SELECT tgt.speed FROM trx_gps_tracking tgt WHERE tgt.device_id = mt.device_id ORDER BY tgt.modified_at DESC LIMIT 1),0
+		) AS gps_speed
+	FROM mst_device mt WHERE mt.device_id = ?`
 )
