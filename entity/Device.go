@@ -37,4 +37,14 @@ type (
 		Long     float64
 		DetectAt time.Time
 	}
+	// ResultMonitoringDeviceById...
+	ResultMonitoringDeviceById struct {
+		Id                int64
+		DeviceId          string
+		LogStatus         string
+		LogReason         string
+		LogSignalStrength float64
+		LogRecordedAt     time.Time
+		GpsSpeed          float64
+	}
 )

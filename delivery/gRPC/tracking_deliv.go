@@ -8,22 +8,26 @@ import (
 	"github.com/aditya37/geospatial-tracking/repository"
 	device_usecase "github.com/aditya37/geospatial-tracking/usecase/device"
 
+	chan_repo "github.com/aditya37/geospatial-tracking/repository/channel"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type Trackingdeliv struct {
-	deviceCase *device_usecase.DeviceUsecase
-	repostream *repository.GPSChannelStream
+	deviceCase           *device_usecase.DeviceUsecase
+	repostream           *repository.GPSChannelStream
+	chanStreamDeviceById *chan_repo.MonitoringDeviceByIdPool
 	proto.UnimplementedGeotrackingServer
 }
 
 func NewTrackingDelivery(
 	deviceCase *device_usecase.DeviceUsecase,
 	repostream *repository.GPSChannelStream,
+	chanStreamDeviceById *chan_repo.MonitoringDeviceByIdPool,
 ) *Trackingdeliv {
 	return &Trackingdeliv{
-		deviceCase: deviceCase,
-		repostream: repostream,
+		deviceCase:           deviceCase,
+		repostream:           repostream,
+		chanStreamDeviceById: chanStreamDeviceById,
 	}
 }
 

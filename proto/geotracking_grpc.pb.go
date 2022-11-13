@@ -4,7 +4,6 @@ package proto
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -24,6 +23,7 @@ type GeotrackingClient interface {
 	GetGPSTracking(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (Geotracking_GetGPSTrackingClient, error)
 	GetDeviceCounter(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ResponseGetDeviceCounter, error)
 	GetDeviceLogs(ctx context.Context, in *RequestGetDeviceLogs, opts ...grpc.CallOption) (*ResponseGetDeviceLogs, error)
+	MonitoringDeviceById(ctx context.Context, in *RequestMonitoringDeviceById, opts ...grpc.CallOption) (Geotracking_MonitoringDeviceByIdClient, error)
 }
 
 type geotrackingClient struct {
@@ -93,6 +93,38 @@ func (c *geotrackingClient) GetDeviceLogs(ctx context.Context, in *RequestGetDev
 	return out, nil
 }
 
+func (c *geotrackingClient) MonitoringDeviceById(ctx context.Context, in *RequestMonitoringDeviceById, opts ...grpc.CallOption) (Geotracking_MonitoringDeviceByIdClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Geotracking_ServiceDesc.Streams[1], "/proto.Geotracking/MonitoringDeviceById", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &geotrackingMonitoringDeviceByIdClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Geotracking_MonitoringDeviceByIdClient interface {
+	Recv() (*ResponseMonitoringDeviceById, error)
+	grpc.ClientStream
+}
+
+type geotrackingMonitoringDeviceByIdClient struct {
+	grpc.ClientStream
+}
+
+func (x *geotrackingMonitoringDeviceByIdClient) Recv() (*ResponseMonitoringDeviceById, error) {
+	m := new(ResponseMonitoringDeviceById)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // GeotrackingServer is the server API for Geotracking service.
 // All implementations must embed UnimplementedGeotrackingServer
 // for forward compatibility
@@ -101,6 +133,7 @@ type GeotrackingServer interface {
 	GetGPSTracking(*emptypb.Empty, Geotracking_GetGPSTrackingServer) error
 	GetDeviceCounter(context.Context, *emptypb.Empty) (*ResponseGetDeviceCounter, error)
 	GetDeviceLogs(context.Context, *RequestGetDeviceLogs) (*ResponseGetDeviceLogs, error)
+	MonitoringDeviceById(*RequestMonitoringDeviceById, Geotracking_MonitoringDeviceByIdServer) error
 	mustEmbedUnimplementedGeotrackingServer()
 }
 
@@ -119,6 +152,9 @@ func (UnimplementedGeotrackingServer) GetDeviceCounter(context.Context, *emptypb
 }
 func (UnimplementedGeotrackingServer) GetDeviceLogs(context.Context, *RequestGetDeviceLogs) (*ResponseGetDeviceLogs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceLogs not implemented")
+}
+func (UnimplementedGeotrackingServer) MonitoringDeviceById(*RequestMonitoringDeviceById, Geotracking_MonitoringDeviceByIdServer) error {
+	return status.Errorf(codes.Unimplemented, "method MonitoringDeviceById not implemented")
 }
 func (UnimplementedGeotrackingServer) mustEmbedUnimplementedGeotrackingServer() {}
 
@@ -208,6 +244,27 @@ func _Geotracking_GetDeviceLogs_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Geotracking_MonitoringDeviceById_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(RequestMonitoringDeviceById)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(GeotrackingServer).MonitoringDeviceById(m, &geotrackingMonitoringDeviceByIdServer{stream})
+}
+
+type Geotracking_MonitoringDeviceByIdServer interface {
+	Send(*ResponseMonitoringDeviceById) error
+	grpc.ServerStream
+}
+
+type geotrackingMonitoringDeviceByIdServer struct {
+	grpc.ServerStream
+}
+
+func (x *geotrackingMonitoringDeviceByIdServer) Send(m *ResponseMonitoringDeviceById) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Geotracking_ServiceDesc is the grpc.ServiceDesc for Geotracking service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -232,6 +289,11 @@ var Geotracking_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GetGPSTracking",
 			Handler:       _Geotracking_GetGPSTracking_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "MonitoringDeviceById",
+			Handler:       _Geotracking_MonitoringDeviceById_Handler,
 			ServerStreams: true,
 		},
 	},

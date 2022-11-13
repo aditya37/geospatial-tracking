@@ -31,4 +31,5 @@ type DeviceManager interface {
 	GetLastTrackingByInterval(ctx context.Context, deviceid string, interval int) (*entity.GPSTracking, error)
 	GetDeviceCounter(ctx context.Context) (*entity.ResultGetCount, error)
 	GetDeviceLogs(ctx context.Context, data *proto.RequestGetDeviceLogs) ([]*entity.DeviceLog, error)
+	GetDataMonitoringByDeviceId(ctx context.Context, device_id string) (*entity.ResultMonitoringDeviceById, error)
 }
