@@ -57,7 +57,7 @@ func (td *Trackingdeliv) GetGPSTracking(req *emptypb.Empty, stream proto.Geotrac
 						Long:  float32(d.Long),
 						Speed: float32(d.Speed),
 					},
-					DeviceInfo: &device,
+					DeviceInfo: device.Device,
 					Sensors: &proto.Sensor{
 						SignalStrength: float32(d.Signal),
 						Temp:           float32(d.Temp),
@@ -95,6 +95,14 @@ func (td *Trackingdeliv) GetDeviceLogs(ctx context.Context, in *proto.RequestGet
 	resp, err := td.deviceCase.GetDeviceLogs(ctx, in)
 	if err != nil {
 		return nil, err
+	}
+	return &resp, nil
+}
+
+func (td *Trackingdeliv) GetDeviceByDeviceId(ctx context.Context, in *proto.RequestGetDeviceByDeviceId) (*proto.ResponseGetDeviceByDeviceId, error) {
+	resp, err := td.deviceCase.GetDeviceDetailByDeviceId(ctx, in.DeviceId)
+	if err != nil {
+		return &proto.ResponseGetDeviceByDeviceId{}, err
 	}
 	return &resp, nil
 }

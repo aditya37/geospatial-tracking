@@ -24,6 +24,7 @@ type GeotrackingClient interface {
 	GetDeviceCounter(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ResponseGetDeviceCounter, error)
 	GetDeviceLogs(ctx context.Context, in *RequestGetDeviceLogs, opts ...grpc.CallOption) (*ResponseGetDeviceLogs, error)
 	MonitoringDeviceById(ctx context.Context, in *RequestMonitoringDeviceById, opts ...grpc.CallOption) (Geotracking_MonitoringDeviceByIdClient, error)
+	GetDeviceByDeviceId(ctx context.Context, in *RequestGetDeviceByDeviceId, opts ...grpc.CallOption) (*ResponseGetDeviceByDeviceId, error)
 }
 
 type geotrackingClient struct {
@@ -125,6 +126,15 @@ func (x *geotrackingMonitoringDeviceByIdClient) Recv() (*ResponseMonitoringDevic
 	return m, nil
 }
 
+func (c *geotrackingClient) GetDeviceByDeviceId(ctx context.Context, in *RequestGetDeviceByDeviceId, opts ...grpc.CallOption) (*ResponseGetDeviceByDeviceId, error) {
+	out := new(ResponseGetDeviceByDeviceId)
+	err := c.cc.Invoke(ctx, "/proto.Geotracking/GetDeviceByDeviceId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GeotrackingServer is the server API for Geotracking service.
 // All implementations must embed UnimplementedGeotrackingServer
 // for forward compatibility
@@ -134,6 +144,7 @@ type GeotrackingServer interface {
 	GetDeviceCounter(context.Context, *emptypb.Empty) (*ResponseGetDeviceCounter, error)
 	GetDeviceLogs(context.Context, *RequestGetDeviceLogs) (*ResponseGetDeviceLogs, error)
 	MonitoringDeviceById(*RequestMonitoringDeviceById, Geotracking_MonitoringDeviceByIdServer) error
+	GetDeviceByDeviceId(context.Context, *RequestGetDeviceByDeviceId) (*ResponseGetDeviceByDeviceId, error)
 	mustEmbedUnimplementedGeotrackingServer()
 }
 
@@ -155,6 +166,9 @@ func (UnimplementedGeotrackingServer) GetDeviceLogs(context.Context, *RequestGet
 }
 func (UnimplementedGeotrackingServer) MonitoringDeviceById(*RequestMonitoringDeviceById, Geotracking_MonitoringDeviceByIdServer) error {
 	return status.Errorf(codes.Unimplemented, "method MonitoringDeviceById not implemented")
+}
+func (UnimplementedGeotrackingServer) GetDeviceByDeviceId(context.Context, *RequestGetDeviceByDeviceId) (*ResponseGetDeviceByDeviceId, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceByDeviceId not implemented")
 }
 func (UnimplementedGeotrackingServer) mustEmbedUnimplementedGeotrackingServer() {}
 
@@ -265,6 +279,24 @@ func (x *geotrackingMonitoringDeviceByIdServer) Send(m *ResponseMonitoringDevice
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Geotracking_GetDeviceByDeviceId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestGetDeviceByDeviceId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GeotrackingServer).GetDeviceByDeviceId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Geotracking/GetDeviceByDeviceId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GeotrackingServer).GetDeviceByDeviceId(ctx, req.(*RequestGetDeviceByDeviceId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Geotracking_ServiceDesc is the grpc.ServiceDesc for Geotracking service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -283,6 +315,10 @@ var Geotracking_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDeviceLogs",
 			Handler:    _Geotracking_GetDeviceLogs_Handler,
+		},
+		{
+			MethodName: "GetDeviceByDeviceId",
+			Handler:    _Geotracking_GetDeviceByDeviceId_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

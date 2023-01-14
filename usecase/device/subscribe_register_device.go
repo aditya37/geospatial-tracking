@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 
 	logger "github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
@@ -69,20 +68,52 @@ func (du *DeviceUsecase) registerDevice(ctx context.Context, payload usecase.Mqt
 	if _, ok := proto.DeviceType_name[int32(payload.DeviceType)]; !ok {
 		return errors.New("unknow device type")
 	}
-	// do insert or register device
-	if err := du.deviceManagerRepo.InsertDevice(
-		ctx,
-		entity.Device{
-			DeviceId: payload.Deviceid,
-			DeviceType: int(
-				proto.DeviceType(payload.DeviceType),
-			),
-			MacAddress: payload.MacAddress,
-			ChipId:     payload.ChipId,
-			I2cAddress: payload.I2cAddress,
-		},
-	); err != nil {
-		return err
+
+	if payload.NetworkMode == usecase.NETWORK_MODE_WLAN {
+		// do insert or register device
+		if err := du.deviceManagerRepo.InsertDevice(
+			ctx,
+			entity.Device{
+				DeviceId: payload.Deviceid,
+				DeviceType: int(
+					proto.DeviceType(payload.DeviceType),
+				),
+				MacAddress:  payload.MacAddress,
+				ChipId:      payload.ChipId,
+				I2cAddress:  payload.I2cAddress,
+				NetworkMode: payload.NetworkMode,
+			},
+		); err != nil {
+			return err
+		}
+	} else if payload.NetworkMode == usecase.NETWORK_MODE_MOBILE_DATA {
+		// process insert device with network mode mobile data
+		// do insert or register device
+		if err := du.deviceManagerRepo.InsertDevice(
+			ctx,
+			entity.Device{
+				DeviceId: payload.Deviceid,
+				DeviceType: int(
+					proto.DeviceType(payload.DeviceType),
+				),
+				MacAddress:  payload.MacAddress,
+				ChipId:      payload.ChipId,
+				I2cAddress:  payload.I2cAddress,
+				NetworkMode: payload.NetworkMode,
+				SIM: entity.SIM{
+					PhoneNo:     payload.PhoneNo,
+					IMEI:        payload.IMEI,
+					IMSI:        payload.IMSI,
+					SIMOperator: payload.SimOperator,
+					APN:         payload.APN,
+				},
+			},
+		); err != nil {
+			return err
+		}
+		return nil
+	} else {
+		return errors.New("unknown network mode")
 	}
 	return nil
 }
@@ -102,7 +133,6 @@ func (du *DeviceUsecase) unmarshallRegisterPayload(data []byte) (usecase.MqttReg
 func (du *DeviceUsecase) publishRespRegister(topic string, data usecase.MqttRespRegisterDevice) error {
 	logger.Logger().Info(fmt.Sprintf("Publish register response to %s", topic))
 	j, _ := json.Marshal(data)
-	log.Println("resp ", string(j))
 	if err := du.mqttmanager.Publish(topic, 1, false, j); err != nil {
 		return err
 	}
