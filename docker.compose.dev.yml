@@ -1,0 +1,22 @@
+version: '3.3'
+services:
+  service_geospatial_tracking:
+      container_name: "geospatial-tracking"
+      image: ${NAMESPACE}/${SERVICE}:${TAG}
+      build:
+        dockerfile: Dockerfile
+        context: .
+      volumes:
+          - .:/geospatial_tracking/
+      env_file: .env.geospatial.tracking
+      environment:
+           - TZ=Asia/Jakarta
+      ports:
+          - "1112:1112"
+      dns:
+          - 8.8.8.8
+          - 8.8.4.4
+networks:
+  default:
+    external:
+      name: backend-net
