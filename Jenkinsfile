@@ -43,7 +43,7 @@ pipeline{
                     }
                     steps {
                         // get credential file
-                        withCredentials([file(credentialsId: 'dd83468f-6276-474a-b504-1edeb20f1d1d', variable: 'config')]) {
+                        withCredentials([file(credentialsId: '8a0b10f8-0ccf-4d2d-9a01-c5881c57237f', variable: 'config')]) {
                             echo 'Build image'
                             sh "cp $config .env.geospatial.tracking"
                             sh "chmod 644 .env.geospatial.tracking"
