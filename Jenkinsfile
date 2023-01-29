@@ -57,7 +57,7 @@ pipeline{
                             sh 'chmod +x deploy.sh'
                             sh './deploy.sh'
                             sh 'rm .env.geospatial.tracking'
-					   sh 'sa.fbs.device.service.json'
+					   sh 'rm sa.fbs.device.service.json'
                         }
                     }
                 }
