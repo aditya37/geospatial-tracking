@@ -45,7 +45,7 @@ pipeline{
                         // get credential file
                         withCredentials([
 						file(credentialsId: '8a0b10f8-0ccf-4d2d-9a01-c5881c57237f', variable: 'config'),
-						file(credentialsId: '43e011d2-1a2b-4182-8579-89bdf35c4270',variable:'firebase-sa')
+						file(credentialsId: '9b6787aa-ef79-4c7a-9e7c-f5be36eb606b',variable:'firebase-sa')
 					]) {
                             echo 'Build image'
                             sh "cp $config .env.geospatial.tracking"
