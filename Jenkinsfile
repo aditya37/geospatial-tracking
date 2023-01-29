@@ -45,12 +45,12 @@ pipeline{
                         // get credential file
                         withCredentials([
 						file(credentialsId: '8a0b10f8-0ccf-4d2d-9a01-c5881c57237f', variable: 'config'),
-						file(credentialsId: '9b6787aa-ef79-4c7a-9e7c-f5be36eb606b',variable:'firebase-sa')
+						file(credentialsId: '9b6787aa-ef79-4c7a-9e7c-f5be36eb606b',variable:'firebasesa')
 					]) {
                             echo 'Build image'
                             sh "cp $config .env.geospatial.tracking"
                             sh "chmod 644 .env.geospatial.tracking"
-					   sh "cp $firebase-sa sa.fbs.device.service.json"
+					   sh "cp $firebasesa sa.fbs.device.service.json"
 					   sh 'chmod 644'
 			             sh 'chmod +x build.sh'
 			             sh './build.sh'
