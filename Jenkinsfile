@@ -51,7 +51,7 @@ pipeline{
                             sh "cp $config .env.geospatial.tracking"
                             sh "chmod 644 .env.geospatial.tracking"
 					   sh "cp $firebasesa sa.fbs.device.service.json"
-					   sh 'chmod 644'
+					   sh 'chmod 644 sa.fbs.device.service.json'
 			             sh 'chmod +x build.sh'
 			             sh './build.sh'
                             sh 'chmod +x deploy.sh'
