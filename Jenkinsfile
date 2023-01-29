@@ -43,15 +43,21 @@ pipeline{
                     }
                     steps {
                         // get credential file
-                        withCredentials([file(credentialsId: '8a0b10f8-0ccf-4d2d-9a01-c5881c57237f', variable: 'config')]) {
+                        withCredentials(
+						[file(credentialsId: '8a0b10f8-0ccf-4d2d-9a01-c5881c57237f', variable: 'config')],
+						[file(credentialsId: '43e011d2-1a2b-4182-8579-89bdf35c4270',variable:'firebase-sa')]
+					) {
                             echo 'Build image'
                             sh "cp $config .env.geospatial.tracking"
                             sh "chmod 644 .env.geospatial.tracking"
-			                sh 'chmod +x build.sh'
-			                sh './build.sh'
+					   sh "cp $firebase-sa sa.fbs.device.service.json"
+					   sh 'chmod 644'
+			             sh 'chmod +x build.sh'
+			             sh './build.sh'
                             sh 'chmod +x deploy.sh'
                             sh './deploy.sh'
                             sh 'rm .env.geospatial.tracking'
+					   sh 'sa.fbs.device.service.json'
                         }
                     }
                 }

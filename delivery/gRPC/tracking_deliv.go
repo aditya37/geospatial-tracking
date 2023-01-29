@@ -106,3 +106,11 @@ func (td *Trackingdeliv) GetDeviceByDeviceId(ctx context.Context, in *proto.Requ
 	}
 	return &resp, nil
 }
+
+func (td *Trackingdeliv) DeviceQrCode(ctx context.Context, in *proto.RequestDeviceQrCode) (*proto.ResponseDeviceQrCode, error) {
+	resp, err := td.deviceCase.DeviceQrCode(ctx, in)
+	if err != nil {
+		return &proto.ResponseDeviceQrCode{}, err
+	}
+	return &resp, nil
+}

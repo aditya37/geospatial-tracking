@@ -8,6 +8,15 @@ enum DeviceType {
 	IOT = 0;
 	ANDROID = 1;
 }
+enum ActionType {
+	GENERATE_DEVICE_QR_CODE  = 0;
+	GET_DEVICE_QR_CODE 		= 1;
+}
+enum EventType {
+	OTHER = 0;
+	PAIRING_USER_TO_DEVICE = 1;
+}
+
 message GPSData {
 	float   lat  = 1;
 	float   long = 2;
@@ -109,6 +118,19 @@ message ResponseGetDeviceByDeviceId {
 	string 	modified_at = 6;
 }
 
+// ES29 Get and Generate device qr code 
+message RequestDeviceQrCode {
+	string 	 device_id = 1;
+	EventType  event_type = 2;
+	ActionType action_type = 3;
+	string 	 description = 4;
+}
+message ResponseDeviceQrCode {
+	string qr_file = 1;
+	string url 	= 2;
+	string event_type =3;
+}
+
 service Geotracking {
 	rpc GetDeviceLogByDeviceId(RequestGetDeviceLogByDeviceId) returns (ResponseGetDeviceLogByDeviceId);
 	rpc GetGPSTracking(google.protobuf.Empty) returns (stream ResponseStreamGPSTracking);
@@ -116,4 +138,5 @@ service Geotracking {
 	rpc GetDeviceLogs(RequestGetDeviceLogs) returns (ResponseGetDeviceLogs);
 	rpc MonitoringDeviceById(RequestMonitoringDeviceById) returns (stream ResponseMonitoringDeviceById);
 	rpc GetDeviceByDeviceId(RequestGetDeviceByDeviceId) returns(ResponseGetDeviceByDeviceId);
+	rpc DeviceQrCode(RequestDeviceQrCode) returns(ResponseDeviceQrCode);
 }

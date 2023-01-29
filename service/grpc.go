@@ -19,6 +19,7 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
 	chan_repo "github.com/aditya37/geospatial-tracking/repository/channel"
+	firebase_manager "github.com/aditya37/geospatial-tracking/repository/firebase"
 	gcp_manager "github.com/aditya37/geospatial-tracking/repository/gcppubsub"
 	device_manager "github.com/aditya37/geospatial-tracking/repository/mysql/device-manager"
 	cache_manager "github.com/aditya37/geospatial-tracking/repository/redis"
@@ -39,28 +40,17 @@ type grpcSvc struct {
 }
 
 func NewGrpc() (Grpc, error) {
+	ctx := context.Background()
 	// mqtt infra
 	if err := infra.NewMqttClientInstance(
-		infra.MQTTConf{
-			Host:     config.GetString("MQTT_HOST", "127.0.0.1"),
-			Port:     int64(config.GetInt("MQTT_PORT", 1883)),
-			Username: config.GetString("MQTT_USERNAME", ""),
-			Password: config.GetString("MQTT_PASSWORD", ""),
-			ClientId: "tracking1",
-		},
+		infra.GetMQTTConfig(),
 	); err != nil {
 		return nil, err
 	}
 	mqttClientInfra := infra.GetMqttClientInstance()
 	if mqttClientInfra == nil {
 		if err := infra.NewMqttClientInstance(
-			infra.MQTTConf{
-				Host:     config.GetString("MQTT_HOST", "127.0.0.1"),
-				Port:     int64(config.GetInt("MQTT_PORT", 1883)),
-				Username: config.GetString("MQTT_USERNAME", ""),
-				Password: config.GetString("MQTT_PASSWORD", ""),
-				ClientId: "tracking1",
-			},
+			infra.GetMQTTConfig(),
 		); err != nil {
 			return nil, err
 		}
@@ -69,26 +59,14 @@ func NewGrpc() (Grpc, error) {
 
 	// mysql infra
 	if err := infra.NewMysqlClient(
-		infra.MysqlConfigParam{
-			Host:     config.GetString("DB_HOST", "127.0.0.1"),
-			Port:     config.GetInt("DB_PORT", 3306),
-			Name:     config.GetString("DB_NAME", "db_geofencing"),
-			User:     config.GetString("DB_USER", "root"),
-			Password: config.GetString("DB_PASSWORD", "admin"),
-		},
+		infra.GetMysqlConfig(),
 	); err != nil {
 		return nil, err
 	}
 	mysqlInfra := infra.GetMysqlClientInstance()
 	if mysqlInfra == nil {
 		if err := infra.NewMysqlClient(
-			infra.MysqlConfigParam{
-				Host:     config.GetString("DB_HOST", "127.0.0.1"),
-				Port:     config.GetInt("DB_PORT", 3306),
-				Name:     config.GetString("DB_NAME", "db_geofencing"),
-				User:     config.GetString("DB_USER", "root"),
-				Password: config.GetString("DB_PASSWORD", "admin"),
-			},
+			infra.GetMysqlConfig(),
 		); err != nil {
 			return nil, err
 		}
@@ -96,32 +74,42 @@ func NewGrpc() (Grpc, error) {
 	}
 
 	// redis instance
-	infra.NewRedisInstance(infra.RedisConfigParam{
-		Port:     config.GetInt("REDIS_PORT", 6379),
-		Host:     config.GetString("REDIS_HOST", "127.0.0.1"),
-		Password: config.GetString("REDIS_PASSWORD", ""),
-	})
+	infra.NewRedisInstance(infra.GetRedisConfig())
 	redisInfra := infra.GetRedisInstance()
 	if redisInfra == nil {
-		infra.NewRedisInstance(infra.RedisConfigParam{
-			Port:     config.GetInt("REDIS_PORT", 6379),
-			Host:     config.GetString("REDIS_HOST", "127.0.0.1"),
-			Password: config.GetString("REDIS_PASSWORD", ""),
-		})
+		infra.NewRedisInstance(infra.GetRedisConfig())
 		redisInfra = infra.GetRedisInstance()
 	}
 	// gcppubsubInstance...
 	infra.NewGcpPubsubInstance(
-		context.Background(),
+		ctx,
 		getenv.GetString("GCP_PROJECT_ID", ""),
 	)
 	gcpPubsubInstane := infra.GetGcpPubsubInstance()
 	if gcpPubsubInstane == nil {
 		infra.NewGcpPubsubInstance(
-			context.Background(),
+			ctx,
 			getenv.GetString("GCP_PROJECT_ID", ""),
 		)
 		gcpPubsubInstane = infra.GetGcpPubsubInstance()
+	}
+
+	// firebase instance...
+	if err := infra.NewFirebaseClient(
+		ctx,
+		infra.GetFirebaseConfig(),
+	); err != nil {
+		return nil, err
+	}
+	firebaseInstance := infra.GetFirebaseInstance()
+	if firebaseInstance == nil {
+		if err := infra.NewFirebaseClient(
+			ctx,
+			infra.GetFirebaseConfig(),
+		); err != nil {
+			return nil, err
+		}
+		firebaseInstance = infra.GetFirebaseInstance()
 	}
 
 	// mqtt repo
@@ -149,6 +137,14 @@ func NewGrpc() (Grpc, error) {
 	// gcppubsubManager...
 	gcpPubsubManager := gcp_manager.NewGcpPubsubManager(gcpPubsubInstane)
 
+	// firebase..
+	fbsStorage, err := firebase_manager.NewStorageBucket(
+		ctx,
+		firebaseInstance,
+	)
+	if err != nil {
+		return nil, err
+	}
 	deviceUsecase := device_case.NewDeviceUsecase(
 		mqttManager,
 		deviceManagerRepo,
@@ -157,6 +153,7 @@ func NewGrpc() (Grpc, error) {
 		gpsChanForward,
 		gcpPubsubManager,
 		chanDeviceMonitoringById,
+		fbsStorage,
 	)
 	gpsChanForward.Subscribe(deviceUsecase.ForwardGPSTracking)
 

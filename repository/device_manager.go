@@ -25,6 +25,7 @@ type DeviceManager interface {
 	InsertDeviceLog(ctx context.Context, data entity.DeviceLog) error
 	InsertDeviceDetect(ctx context.Context, data entity.DetectDevice) error
 	GetCountDeviceDetect(ctx context.Context) ([]*proto.DetectDeviceItem, error)
+	InsertDeviceQr(ctx context.Context, data entity.QRDevice) error
 
 	// Read....
 	GetDeviceByDeviceId(ctx context.Context, deviceid string) (*entity.Device, error)
@@ -32,4 +33,5 @@ type DeviceManager interface {
 	GetDeviceCounter(ctx context.Context) (*entity.ResultGetCount, error)
 	GetDeviceLogs(ctx context.Context, data *proto.RequestGetDeviceLogs) ([]*entity.DeviceLog, error)
 	GetDataMonitoringByDeviceId(ctx context.Context, device_id string) (*entity.ResultMonitoringDeviceById, error)
+	GetDeviceQrCode(ctx context.Context, data entity.QRDevice) (*entity.QRDevice, error)
 }
