@@ -43,10 +43,10 @@ pipeline{
                     }
                     steps {
                         // get credential file
-                        withCredentials(
-						[file(credentialsId: '8a0b10f8-0ccf-4d2d-9a01-c5881c57237f', variable: 'config')],
-						[file(credentialsId: '43e011d2-1a2b-4182-8579-89bdf35c4270',variable:'firebase-sa')]
-					) {
+                        withCredentials([
+						file(credentialsId: '8a0b10f8-0ccf-4d2d-9a01-c5881c57237f', variable: 'config'),
+						file(credentialsId: '43e011d2-1a2b-4182-8579-89bdf35c4270',variable:'firebase-sa')
+					]) {
                             echo 'Build image'
                             sh "cp $config .env.geospatial.tracking"
                             sh "chmod 644 .env.geospatial.tracking"
