@@ -19,13 +19,14 @@ var (
 type DeviceManager interface {
 	io.Closer
 	// Write....
-	InsertDevice(ctx context.Context, data entity.Device) error
+	InsertDevice(ctx context.Context, data entity.Device) (int64, error)
 	InsertTracking(ctx context.Context, data entity.GPSTracking) (int64, error)
 	UpdateTracking(ctx context.Context, data entity.GPSTracking) error
 	InsertDeviceLog(ctx context.Context, data entity.DeviceLog) error
 	InsertDeviceDetect(ctx context.Context, data entity.DetectDevice) error
 	GetCountDeviceDetect(ctx context.Context) ([]*proto.DetectDeviceItem, error)
 	InsertDeviceQr(ctx context.Context, data entity.QRDevice) error
+	InsertEmbeddedSensorInDevice(ctx context.Context, data []entity.DeviceSensor) error
 
 	// Read....
 	GetDeviceByDeviceId(ctx context.Context, deviceid string) (*entity.Device, error)
@@ -34,4 +35,5 @@ type DeviceManager interface {
 	GetDeviceLogs(ctx context.Context, data *proto.RequestGetDeviceLogs) ([]*entity.DeviceLog, error)
 	GetDataMonitoringByDeviceId(ctx context.Context, device_id string) (*entity.ResultMonitoringDeviceById, error)
 	GetDeviceQrCode(ctx context.Context, data entity.QRDevice) (*entity.QRDevice, error)
+	GetSensorById(ctx context.Context, sensorid []int) ([]*entity.Sensor, error)
 }

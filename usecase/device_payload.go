@@ -28,24 +28,27 @@ const (
 
 type (
 	MqttRegisterDevicePayload struct {
-		Deviceid    string `json:"device_id"`
-		MacAddress  string `json:"mac_address"`
-		DeviceType  int    `json:"device_type"`
-		ChipId      string `json:"chip_id"`
-		I2cAddress  string `json:"i2c_address"`
-		Timestamp   int64  `json:"timestamp"`
-		NetworkMode string `json:"network_mode"`
-		PhoneNo     string `json:"phone_no"`
-		IMEI        string `json:"imei"`
-		IMSI        string `json:"imsi"`
-		SimOperator int64  `json:"sim_operator"`
-		APN         string `json:"apn"`
+		Deviceid       string `json:"device_id"`
+		MacAddress     string `json:"mac_address"`
+		DeviceType     int    `json:"device_type"`
+		ChipId         string `json:"chip_id"`
+		I2cAddress     string `json:"i2c_address"`
+		Timestamp      int64  `json:"timestamp"`
+		NetworkMode    string `json:"network_mode"`
+		PhoneNo        string `json:"phone_no"`
+		IMEI           string `json:"imei"`
+		IMSI           string `json:"imsi"`
+		SimOperator    int64  `json:"sim_operator"`
+		APN            string `json:"apn"`
+		EmbeddedSensor []int  `json:"embedded_sensor"`
 	}
 
 	MqttRespRegisterDevice struct {
-		Deviceid string `json:"device_id"`
-		Status   string `json:"status"`
-		Message  string `json:"message"`
+		Deviceid              string `json:"device_id"`
+		Status                string `json:"status"`
+		Message               string `json:"message"`
+		ValidSensorId         []int  `json:"valid_sensor_id"`
+		CountSensorIdNotValid int    `json:"count_sensor_not_valid"`
 	}
 
 	// GPS Tracking from device

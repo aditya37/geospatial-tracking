@@ -10,7 +10,7 @@ import (
 	sqldriver "github.com/go-sql-driver/mysql"
 )
 
-func (dm *device) InsertDevice(ctx context.Context, data entity.Device) error {
+func (dm *device) InsertDevice(ctx context.Context, data entity.Device) (int64, error) {
 	// insert or register device if network mode wlan
 	if data.NetworkMode == usecase.NETWORK_MODE_WLAN {
 		arg := []interface{}{
@@ -21,23 +21,17 @@ func (dm *device) InsertDevice(ctx context.Context, data entity.Device) error {
 			&data.I2cAddress,
 			&data.NetworkMode,
 		}
-		if err := dm.registerDeviceNetworkModeWlan(ctx, arg); err != nil {
-			return err
-		}
-		return nil
+		return dm.registerDeviceNetworkModeWlan(ctx, arg)
 		// register device if mode mobile data
 	} else if data.NetworkMode == usecase.NETWORK_MODE_MOBILE_DATA {
-		if err := dm.registerDeviceNetworkModeMobile(ctx, data); err != nil {
-			return err
-		}
-		return nil
+		return dm.registerDeviceNetworkModeMobile(ctx, data)
 	} else {
-		return errors.New("unknow network mode,failed register device")
+		return 0, errors.New("unknow network mode,failed register device")
 	}
 }
 
 // registerDeviceNetworkModeWlan...
-func (dm *device) registerDeviceNetworkModeWlan(ctx context.Context, arg []interface{}) error {
+func (dm *device) registerDeviceNetworkModeWlan(ctx context.Context, arg []interface{}) (int64, error) {
 	row, err := dm.db.ExecContext(
 		ctx,
 		mysqlQueryInsertDevice,
@@ -46,22 +40,22 @@ func (dm *device) registerDeviceNetworkModeWlan(ctx context.Context, arg []inter
 	if err != nil {
 		if errCode, ok := err.(*sqldriver.MySQLError); ok {
 			if errCode.Number == 1062 {
-				return repository.ErrDeviceHasBeenRegistered
+				return 0, repository.ErrDeviceHasBeenRegistered
 			}
 		}
-		return err
+		return 0, err
 	}
 	if isAffacted, _ := row.RowsAffected(); isAffacted == 0 {
-		return repository.ErrInsertDeviceNotAffacted
+		return 0, repository.ErrInsertDeviceNotAffacted
 	}
-	return nil
+	return row.LastInsertId()
 }
 
 // registerDeviceNetworkModeMobile...
-func (dm *device) registerDeviceNetworkModeMobile(ctx context.Context, data entity.Device) error {
+func (dm *device) registerDeviceNetworkModeMobile(ctx context.Context, data entity.Device) (int64, error) {
 	tx, err := dm.db.Begin()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer tx.Rollback()
 
@@ -82,15 +76,15 @@ func (dm *device) registerDeviceNetworkModeMobile(ctx context.Context, data enti
 	if err != nil {
 		if errCode, ok := err.(*sqldriver.MySQLError); ok {
 			if errCode.Number == 1062 {
-				return repository.ErrDeviceHasBeenRegistered
+				return 0, repository.ErrDeviceHasBeenRegistered
 			}
 		}
-		return err
+		return 0, err
 	}
 	// id after insert
 	id, err := row.LastInsertId()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	argInsertSim := []interface{}{
 		&id,
@@ -102,14 +96,14 @@ func (dm *device) registerDeviceNetworkModeMobile(ctx context.Context, data enti
 	}
 	rowInsertSim, err := tx.ExecContext(ctx, mysqlQueryInsertSim, argInsertSim...)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if isAffacted, _ := rowInsertSim.RowsAffected(); isAffacted == 0 {
-		return errors.New("failed register device")
+		return 0, errors.New("failed register device")
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return row.LastInsertId()
 }
