@@ -84,7 +84,9 @@ const (
 			(SELECT tgt.speed FROM trx_gps_tracking tgt WHERE tgt.device_id = mt.device_id ORDER BY tgt.modified_at DESC LIMIT 1),0
 		) AS gps_speed
 	FROM mst_device mt WHERE mt.device_id = ?`
-	mysqlQueryInsertSim   = `INSERT INTO mst_sim(device_id,phone_no,imei,imsi,sim_operator,apn) VALUES(?,?,?,?,?,?)`
-	mysqlQueryInsertQr    = `INSERT INTO mst_qr_code(event_type,device_id,description,qr_file,url) VALUES(?,?,?,?,?)`
-	mysqlQueryGetDeviceQr = `SELECT qr_file,url FROM mst_qr_code WHERE device_id = ? AND event_type = ?`
+	mysqlQueryInsertSim            = `INSERT INTO mst_sim(device_id,phone_no,imei,imsi,sim_operator,apn) VALUES(?,?,?,?,?,?)`
+	mysqlQueryInsertQr             = `INSERT INTO mst_qr_code(event_type,device_id,description,qr_file,url) VALUES(?,?,?,?,?)`
+	mysqlQueryGetDeviceQr          = `SELECT qr_file,url FROM mst_qr_code WHERE device_id = ? AND event_type = ?`
+	mysqlQueryGetSensorById        = `SELECT id FROM mst_sensor WHERE id IN (%s)`
+	mysqlQueryInsertEmbeddedSensor = `INSERT INTO mst_device_sensor (device_id,sensor_id) VALUES %s`
 )
