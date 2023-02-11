@@ -31,13 +31,19 @@ func (dm *device) GetSensorById(ctx context.Context, sensorid []int) ([]*entity.
 		var record entity.Sensor
 		if err := rows.Scan(
 			&record.Id,
+			&record.SensorName,
+			&record.Description,
+			&record.SensorType,
 		); err != nil {
 			return nil, err
 		}
 		result = append(
 			result,
 			&entity.Sensor{
-				Id: record.Id,
+				Id:          record.Id,
+				SensorName:  record.SensorName,
+				Description: record.Description,
+				SensorType:  record.SensorType,
 			},
 		)
 	}
