@@ -26,6 +26,7 @@ type GeotrackingClient interface {
 	MonitoringDeviceById(ctx context.Context, in *RequestMonitoringDeviceById, opts ...grpc.CallOption) (Geotracking_MonitoringDeviceByIdClient, error)
 	GetDeviceByDeviceId(ctx context.Context, in *RequestGetDeviceByDeviceId, opts ...grpc.CallOption) (*ResponseGetDeviceByDeviceId, error)
 	DeviceQrCode(ctx context.Context, in *RequestDeviceQrCode, opts ...grpc.CallOption) (*ResponseDeviceQrCode, error)
+	GetSensorById(ctx context.Context, in *RequestGetSemsorById, opts ...grpc.CallOption) (*ResponseGetSensorById, error)
 }
 
 type geotrackingClient struct {
@@ -145,6 +146,15 @@ func (c *geotrackingClient) DeviceQrCode(ctx context.Context, in *RequestDeviceQ
 	return out, nil
 }
 
+func (c *geotrackingClient) GetSensorById(ctx context.Context, in *RequestGetSemsorById, opts ...grpc.CallOption) (*ResponseGetSensorById, error) {
+	out := new(ResponseGetSensorById)
+	err := c.cc.Invoke(ctx, "/proto.Geotracking/GetSensorById", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GeotrackingServer is the server API for Geotracking service.
 // All implementations must embed UnimplementedGeotrackingServer
 // for forward compatibility
@@ -156,6 +166,7 @@ type GeotrackingServer interface {
 	MonitoringDeviceById(*RequestMonitoringDeviceById, Geotracking_MonitoringDeviceByIdServer) error
 	GetDeviceByDeviceId(context.Context, *RequestGetDeviceByDeviceId) (*ResponseGetDeviceByDeviceId, error)
 	DeviceQrCode(context.Context, *RequestDeviceQrCode) (*ResponseDeviceQrCode, error)
+	GetSensorById(context.Context, *RequestGetSemsorById) (*ResponseGetSensorById, error)
 	mustEmbedUnimplementedGeotrackingServer()
 }
 
@@ -183,6 +194,9 @@ func (UnimplementedGeotrackingServer) GetDeviceByDeviceId(context.Context, *Requ
 }
 func (UnimplementedGeotrackingServer) DeviceQrCode(context.Context, *RequestDeviceQrCode) (*ResponseDeviceQrCode, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeviceQrCode not implemented")
+}
+func (UnimplementedGeotrackingServer) GetSensorById(context.Context, *RequestGetSemsorById) (*ResponseGetSensorById, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSensorById not implemented")
 }
 func (UnimplementedGeotrackingServer) mustEmbedUnimplementedGeotrackingServer() {}
 
@@ -329,6 +343,24 @@ func _Geotracking_DeviceQrCode_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Geotracking_GetSensorById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestGetSemsorById)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GeotrackingServer).GetSensorById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Geotracking/GetSensorById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GeotrackingServer).GetSensorById(ctx, req.(*RequestGetSemsorById))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Geotracking_ServiceDesc is the grpc.ServiceDesc for Geotracking service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -355,6 +387,10 @@ var Geotracking_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeviceQrCode",
 			Handler:    _Geotracking_DeviceQrCode_Handler,
+		},
+		{
+			MethodName: "GetSensorById",
+			Handler:    _Geotracking_GetSensorById_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -114,3 +114,7 @@ func (td *Trackingdeliv) DeviceQrCode(ctx context.Context, in *proto.RequestDevi
 	}
 	return &resp, nil
 }
+
+func (td *Trackingdeliv) GetSensorById(ctx context.Context, in *proto.RequestGetSemsorById) (*proto.ResponseGetSensorById, error) {
+	return td.deviceCase.GetSensorById(ctx, in)
+}
