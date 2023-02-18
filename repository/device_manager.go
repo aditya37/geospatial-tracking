@@ -36,4 +36,5 @@ type DeviceManager interface {
 	GetDataMonitoringByDeviceId(ctx context.Context, device_id string) (*entity.ResultMonitoringDeviceById, error)
 	GetDeviceQrCode(ctx context.Context, data entity.QRDevice) (*entity.QRDevice, error)
 	GetSensorById(ctx context.Context, sensorid []int) ([]*entity.Sensor, error)
+	GetDeviceSensorStatusEmbedded(ctx context.Context, sensorid, id_device int64) error
 }
