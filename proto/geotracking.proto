@@ -133,7 +133,9 @@ message ResponseDeviceQrCode {
 
 // get sensor by id
 message RequestGetSemsorById {
-	int64 sensor_id = 1;
+	int64   sensor_id = 1;
+	string  device_id = 2;
+	bool 	check_embedded = 3;
 }
 message ResponseGetSensorById {
 	int64  id = 1;
