@@ -118,3 +118,11 @@ func (td *Trackingdeliv) DeviceQrCode(ctx context.Context, in *proto.RequestDevi
 func (td *Trackingdeliv) GetSensorById(ctx context.Context, in *proto.RequestGetSemsorById) (*proto.ResponseGetSensorById, error) {
 	return td.deviceCase.GetSensorById(ctx, in)
 }
+
+func (td *Trackingdeliv) GetListAttachedSensor(ctx context.Context, in *proto.RequestGetAttachedSensor) (*proto.ResponseGetAttachedSensor, error) {
+	resp, err := td.deviceCase.GetListAttachedSensor(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}

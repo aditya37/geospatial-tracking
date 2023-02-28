@@ -144,6 +144,15 @@ message ResponseGetSensorById {
 	string sensor_type = 4;
 }
 
+message RequestGetAttachedSensor {
+	string device_id =1;
+}
+
+message ResponseGetAttachedSensor {
+	string device_id = 1;
+	repeated ResponseGetSensorById sensor = 2;
+}
+
 service Geotracking {
 	rpc GetDeviceLogByDeviceId(RequestGetDeviceLogByDeviceId) returns (ResponseGetDeviceLogByDeviceId);
 	rpc GetGPSTracking(google.protobuf.Empty) returns (stream ResponseStreamGPSTracking);
@@ -153,4 +162,5 @@ service Geotracking {
 	rpc GetDeviceByDeviceId(RequestGetDeviceByDeviceId) returns(ResponseGetDeviceByDeviceId);
 	rpc DeviceQrCode(RequestDeviceQrCode) returns(ResponseDeviceQrCode);
 	rpc GetSensorById(RequestGetSemsorById) returns(ResponseGetSensorById);
+	rpc GetListAttachedSensor(RequestGetAttachedSensor) returns (ResponseGetAttachedSensor);
 }
