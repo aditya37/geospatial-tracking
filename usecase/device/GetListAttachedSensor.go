@@ -15,7 +15,7 @@ func (s *DeviceUsecase) GetListAttachedSensor(ctx context.Context, in *proto.Req
 		return proto.ResponseGetAttachedSensor{}, err
 	}
 	return proto.ResponseGetAttachedSensor{
-		DeviceId: resp.DeviceId,
+		DeviceId: in.DeviceId,
 		Sensor:   resp.Sensor,
 	}, nil
 }
