@@ -7,7 +7,10 @@ import (
 	"time"
 
 	"github.com/aditya37/geofence-service/util"
+	"github.com/aditya37/geospatial-tracking/entity"
 	"github.com/aditya37/geospatial-tracking/proto"
+	"github.com/aditya37/geospatial-tracking/repository"
+	getenv "github.com/aditya37/get-env"
 )
 
 var (
@@ -21,6 +24,58 @@ func (du *DeviceUsecase) GetDeviceDetailByDeviceId(ctx context.Context, deviceId
 		device, err := du.deviceManagerRepo.GetDeviceByDeviceId(ctx, deviceId)
 		if err != nil {
 			util.Logger().Error(err)
+			return proto.ResponseGetDeviceByDeviceId{}, err
+		}
+
+		// get attached sensor
+		attachedSensor, err := du.deviceManagerRepo.GetAttachedSensorByDeviceId(ctx, deviceId)
+		if err != nil {
+			util.Logger().Error(err)
+			return proto.ResponseGetDeviceByDeviceId{}, err
+		}
+
+		// get qr code url
+		deviceQrCode, err := du.deviceManagerRepo.GetDeviceQrCode(
+			ctx,
+			entity.QRDevice{
+				DeviceId:  deviceId,
+				EventType: 1,
+			},
+		)
+		if err != nil {
+			util.Logger().Error(err)
+			// return response success if device not have qr code...
+			if err == repository.ErrDeviceNotFound {
+				// set to redis
+				result := proto.ResponseGetDeviceByDeviceId{
+					Id:       device.Id,
+					DeviceId: device.DeviceId,
+					Device: &proto.Device{
+						MacAddress:  device.MacAddress,
+						DeviceType:  proto.DeviceType(device.DeviceType),
+						ChipId:      device.ChipId,
+						NetworkMode: device.NetworkMode,
+						CreatedAt:   device.CreatedAt.Format(time.RFC3339),
+					},
+					NetworkDetail: &proto.Network{
+						OperatorName: device.SIMOperator.Name,
+						PhoneNo:      device.SIM.PhoneNo,
+						Imei:         device.SIM.IMEI,
+						Imsi:         device.SIM.IMSI,
+						Apn:          device.SIM.APN,
+						Status:       device.SIM.Status,
+					},
+					CreatedAt:           device.CreatedAt.Format(time.RFC3339),
+					ModifiedAt:          device.ModifiedAt.Format(time.RFC3339),
+					CountAttachedSensor: int64(len(attachedSensor.Sensor)),
+					SystemUptime:        0, // TODO: add field system uptime and record from mqtt
+					DeviceQrCode:        "",
+					Sensors:             attachedSensor.Sensor,
+				}
+				// set redis cache....
+				du.setCacheDeviceDetail(ctx, deviceId, result)
+				return result, nil
+			}
 			return proto.ResponseGetDeviceByDeviceId{}, err
 		}
 
@@ -43,14 +98,28 @@ func (du *DeviceUsecase) GetDeviceDetailByDeviceId(ctx context.Context, deviceId
 				Apn:          device.SIM.APN,
 				Status:       device.SIM.Status,
 			},
-			CreatedAt:  device.CreatedAt.Format(time.RFC3339),
-			ModifiedAt: device.ModifiedAt.Format(time.RFC3339),
+			CreatedAt:           device.CreatedAt.Format(time.RFC3339),
+			ModifiedAt:          device.ModifiedAt.Format(time.RFC3339),
+			CountAttachedSensor: int64(len(attachedSensor.Sensor)),
+			SystemUptime:        0, // TODO: add field system uptime and record from mqtt
+			DeviceQrCode:        du.getDevicQrCodeUrl(deviceQrCode.QrFile),
+			Sensors:             attachedSensor.Sensor,
 		}
+		// set redis cache....
 		du.setCacheDeviceDetail(ctx, deviceId, result)
 		return result, nil
-
 	}
 	return resp, nil
+}
+
+// getDevicQrCodeUrl....
+func (du *DeviceUsecase) getDevicQrCodeUrl(filename string) string {
+	return fmt.Sprintf(
+		"https://firebasestorage.googleapis.com/v0/b/%s.appspot.com/o/%s?alt=media&token=%s",
+		getenv.GetString("FIREBASE_PROJECT_ID", "device-service-1029d"),
+		filename,
+		filename,
+	)
 }
 
 // setCacheDeviceDetail
