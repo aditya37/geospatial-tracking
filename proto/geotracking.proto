@@ -112,10 +112,14 @@ message RequestGetDeviceByDeviceId {
 message ResponseGetDeviceByDeviceId {
 	int64 	id 		= 1;
 	string 	device_id = 2;
-     Device 	device 	= 3;
-     Network   network_detail = 4;
+    Device 	device 	= 3;
+    Network network_detail = 4;
 	string 	created_at = 5;
 	string 	modified_at = 6;
+	int64 	system_uptime = 7;
+	int64 	count_attached_sensor = 8;
+	string 	device_qr_code = 9;
+	repeated ResponseGetSensorById sensors = 10;
 }
 
 // ES29 Get and Generate device qr code 
