@@ -15,8 +15,6 @@ import (
 	"github.com/aditya37/geospatial-tracking/repository"
 	mqtt_manager "github.com/aditya37/geospatial-tracking/repository/mqtt"
 	getenv "github.com/aditya37/get-env"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
 	chan_repo "github.com/aditya37/geospatial-tracking/repository/channel"
 	firebase_manager "github.com/aditya37/geospatial-tracking/repository/firebase"
@@ -156,7 +154,6 @@ func NewGrpc() (Grpc, error) {
 		fbsStorage,
 	)
 	gpsChanForward.Subscribe(deviceUsecase.ForwardGPSTracking)
-
 	// async
 	// mqtt qos = https://www.emqx.com/id/blog/introduction-to-mqtt-qos
 	go mqttManager.Subscribe(
@@ -209,21 +206,11 @@ func (g *grpcSvc) Run() {
 		errs <- fmt.Errorf("%s", <-c)
 		defer g.close()
 	}()
-
-	server := grpc.NewServer(
-		grpc.StreamInterceptor(
-			grpc_middleware.ChainStreamServer(
-				grpc_recovery.StreamServerInterceptor(),
-				grpc_deliv_mid.StreamAuthMiddleware(),
-			),
-		),
-		grpc.UnaryInterceptor(
-			grpc_middleware.ChainUnaryServer(
-				grpc_recovery.UnaryServerInterceptor(),
-				grpc_deliv_mid.UnaryAuthMiddleware(),
-			),
-		),
+	opt := GetGrpcServerElasticApmOptions(
+		SetUnaryMiddleware(grpc_deliv_mid.UnaryAuthMiddleware()),
+		SetStreamMiddleware(grpc_deliv_mid.StreamAuthMiddleware()),
 	)
+	server := grpc.NewServer(opt...)
 	proto.RegisterGeotrackingServer(server, g.grpcTrackingDlv)
 	reflection.Register(server)
 	go func() {
