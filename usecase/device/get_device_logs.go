@@ -6,16 +6,16 @@ import (
 	"errors"
 	"time"
 
-	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
 	"github.com/aditya37/geospatial-tracking/proto"
 	getenv "github.com/aditya37/get-env"
+	"github.com/aditya37/logger"
 )
 
 func (du *DeviceUsecase) GetDeviceLogs(ctx context.Context, request *proto.RequestGetDeviceLogs) (proto.ResponseGetDeviceLogs, error) {
 	resp, err := du.deviceManagerRepo.GetDeviceLogs(ctx, request)
 	if err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseGetDeviceLogs{}, err
 	}
 	if len(resp) <= 0 {
@@ -40,7 +40,7 @@ func (du *DeviceUsecase) GetDeviceLogs(ctx context.Context, request *proto.Reque
 				Message:   j,
 			},
 		); err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			return
 		}
 	}()

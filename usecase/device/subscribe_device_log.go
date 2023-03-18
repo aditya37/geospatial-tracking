@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
 	"github.com/aditya37/geospatial-tracking/usecase"
+	"github.com/aditya37/logger"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -15,12 +15,12 @@ func (du *DeviceUsecase) SubscribeDeviceLog(c mqtt.Client, m mqtt.Message) {
 	ctx := context.Background()
 	var payload usecase.DeviceLogPayload
 	if err := json.Unmarshal(m.Payload(), &payload); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return
 	}
 	// validate device id
 	if _, err := du.deviceManagerRepo.GetDeviceByDeviceId(ctx, payload.DeviceId); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (du *DeviceUsecase) SubscribeDeviceLog(c mqtt.Client, m mqtt.Message) {
 			RecordedAt:     epochToTime,
 		},
 	); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return
 	}
 }

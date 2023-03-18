@@ -1,7 +1,6 @@
 package infra
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -33,7 +32,7 @@ func NewRedisInstance(param RedisConfigParam) {
 			log.Fatal(err)
 		}
 		if ping != "PONG" {
-			log.Fatal(errors.New("Failed to connect redis"))
+			log.Fatal("Failed to connect redis")
 		}
 		redisInstance = client
 	})

@@ -40,14 +40,14 @@ func NewMysqlClient(param MysqlConfigParam) error {
 			param.Name,
 			"Asia%2FJakarta",
 		)
-		log.Println(fmt.Sprintf(
+		log.Printf(
 			"MySQL Connection %s:%s@tcp(%s:%d)/%s",
 			param.User,
 			"********************",
 			param.Host,
 			param.Port,
 			param.Name,
-		))
+		)
 		db, err := apmsql.Open("mysql", connURL)
 		if err != nil {
 			retErr = err

@@ -54,7 +54,6 @@ func NewGrpc() (Grpc, error) {
 		}
 		mqttClientInfra = infra.GetMqttClientInstance()
 	}
-
 	// mysql infra
 	if err := infra.NewMysqlClient(
 		infra.GetMysqlConfig(),

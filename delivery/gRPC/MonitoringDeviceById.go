@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/delivery/middleware"
 	"github.com/aditya37/geospatial-tracking/proto"
 	"github.com/aditya37/geospatial-tracking/repository/channel"
+	"github.com/aditya37/logger"
 )
 
 func (td *Trackingdeliv) MonitoringDeviceById(request *proto.RequestMonitoringDeviceById, stream proto.Geotracking_MonitoringDeviceByIdServer) error {
@@ -39,7 +39,7 @@ func (td *Trackingdeliv) MonitoringDeviceById(request *proto.RequestMonitoringDe
 				ctx,
 				request,
 			); err != nil {
-				util.Logger().Error(err)
+				logger.Error(err)
 				return err
 			}
 		case <-ctx.Done():

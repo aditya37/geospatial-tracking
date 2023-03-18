@@ -3,10 +3,10 @@ package grpc
 import (
 	"context"
 
-	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/proto"
 	"github.com/aditya37/geospatial-tracking/repository"
 	device_usecase "github.com/aditya37/geospatial-tracking/usecase/device"
+	"github.com/aditya37/logger"
 
 	chan_repo "github.com/aditya37/geospatial-tracking/repository/channel"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -45,7 +45,7 @@ func (td *Trackingdeliv) GetGPSTracking(req *emptypb.Empty, stream proto.Geotrac
 			// open channel
 			device, err := td.deviceCase.GetDeviceDetailByDeviceId(streamCtx, d.DeviceId)
 			if err != nil {
-				util.Logger().Error(err)
+				logger.Error(err)
 				continue
 			}
 			if err := stream.Send(

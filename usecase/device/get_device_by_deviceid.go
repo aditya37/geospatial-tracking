@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
 	"github.com/aditya37/geospatial-tracking/proto"
 	"github.com/aditya37/geospatial-tracking/repository"
 	getenv "github.com/aditya37/get-env"
+	"github.com/aditya37/logger"
 )
 
 var (
@@ -23,14 +23,14 @@ func (du *DeviceUsecase) GetDeviceDetailByDeviceId(ctx context.Context, deviceId
 	if err != nil {
 		device, err := du.deviceManagerRepo.GetDeviceByDeviceId(ctx, deviceId)
 		if err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			return proto.ResponseGetDeviceByDeviceId{}, err
 		}
 
 		// get attached sensor
 		attachedSensor, err := du.deviceManagerRepo.GetAttachedSensorByDeviceId(ctx, deviceId)
 		if err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			return proto.ResponseGetDeviceByDeviceId{}, err
 		}
 
@@ -43,7 +43,7 @@ func (du *DeviceUsecase) GetDeviceDetailByDeviceId(ctx context.Context, deviceId
 			},
 		)
 		if err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			// return response success if device not have qr code...
 			if err == repository.ErrDeviceNotFound {
 				// set to redis
@@ -127,7 +127,7 @@ func (du *DeviceUsecase) setCacheDeviceDetail(_ context.Context, deviceId string
 	key := fmt.Sprintf(keyPrfxCacheDevice, deviceId)
 	byteDeviceDetail, err := json.Marshal(data)
 	if err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return err
 	}
 	return du.cacheManager.Set(key, byteDeviceDetail, time.Duration(86400*time.Second))
@@ -137,12 +137,12 @@ func (du *DeviceUsecase) setCacheDeviceDetail(_ context.Context, deviceId string
 func (du *DeviceUsecase) loadDeviceDetailFromRedis(_ context.Context, deviceId string) (proto.ResponseGetDeviceByDeviceId, error) {
 	result, err := du.cacheManager.Get(fmt.Sprintf(keyPrfxCacheDevice, deviceId))
 	if err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseGetDeviceByDeviceId{}, err
 	}
 	var record proto.ResponseGetDeviceByDeviceId
 	if err := json.Unmarshal([]byte(result), &record); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseGetDeviceByDeviceId{}, err
 	}
 	return record, nil

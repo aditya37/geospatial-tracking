@@ -35,7 +35,7 @@ func NewMqttClientInstance(param MQTTConf) error {
 
 		client := mqtt.NewClient(opts)
 		if !client.IsConnected() && !client.Connect().Wait() {
-			err = errors.New(fmt.Sprintf("MQTT Broker not connected"))
+			err = errors.New("MQTT Broker not connected")
 		}
 		mqttClientInstance = client
 	})

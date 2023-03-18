@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
 	"github.com/aditya37/geospatial-tracking/repository"
 	getenv "github.com/aditya37/get-env"
+	"github.com/aditya37/logger"
 	"github.com/google/uuid"
 )
 
@@ -87,7 +87,7 @@ func (gm *gcppubsubManager) Subscribe(ctx context.Context, topic, servicename st
 func (gm *gcppubsubManager) Publish(ctx context.Context, param entity.PublishParam) error {
 	topic, err := gm.getTopic(ctx, param.TopicName)
 	if err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return err
 	}
 	resp := topic.Publish(
@@ -97,7 +97,7 @@ func (gm *gcppubsubManager) Publish(ctx context.Context, param entity.PublishPar
 		},
 	)
 	if _, err := resp.Get(ctx); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return err
 	}
 	return nil

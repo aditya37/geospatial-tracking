@@ -9,10 +9,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
 	"github.com/aditya37/geospatial-tracking/proto"
 	getenv "github.com/aditya37/get-env"
+	"github.com/aditya37/logger"
 	rgbqrcode "github.com/aditya37/rgb-qrcode"
 )
 
@@ -53,7 +53,7 @@ func (du *DeviceUsecase) processGenerateQrCodePairingUserDevice(ctx context.Cont
 		ctx,
 		request.DeviceId,
 	); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseDeviceQrCode{}, err
 	}
 
@@ -72,7 +72,7 @@ func (du *DeviceUsecase) processGenerateQrCodePairingUserDevice(ctx context.Cont
 		logo,
 	)
 	if err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseDeviceQrCode{}, err
 	}
 
@@ -86,7 +86,7 @@ func (du *DeviceUsecase) processGenerateQrCodePairingUserDevice(ctx context.Cont
 		qrResult.PNG.Bytes(),
 		os.FileMode(0644),
 	); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseDeviceQrCode{}, err
 	}
 
@@ -96,13 +96,13 @@ func (du *DeviceUsecase) processGenerateQrCodePairingUserDevice(ctx context.Cont
 
 	// publish to firebase...
 	if err := du.fbsStorage.UploadToStorageBucket(ctx, filename, fs); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseDeviceQrCode{}, err
 	}
 	// storage url..
 	url, err := du.fbsStorage.GetFileDownloadUrl(ctx, filename)
 	if err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseDeviceQrCode{}, err
 	}
 	// store to database...
@@ -116,7 +116,7 @@ func (du *DeviceUsecase) processGenerateQrCodePairingUserDevice(ctx context.Cont
 			Url:         url,
 		},
 	); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseDeviceQrCode{}, err
 	}
 	defer os.Remove(pathTempQr)
@@ -135,7 +135,7 @@ func (du *DeviceUsecase) processGetQrCodePairUserDevice(ctx context.Context, req
 		ctx,
 		request.DeviceId,
 	); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return proto.ResponseDeviceQrCode{}, err
 	}
 	var response proto.ResponseDeviceQrCode
@@ -155,7 +155,7 @@ func (du *DeviceUsecase) processGetQrCodePairUserDevice(ctx context.Context, req
 			},
 		)
 		if err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			return proto.ResponseDeviceQrCode{}, err
 		}
 		resp := proto.ResponseDeviceQrCode{
@@ -169,7 +169,7 @@ func (du *DeviceUsecase) processGetQrCodePairUserDevice(ctx context.Context, req
 		return resp, nil
 	}
 	if err := json.Unmarshal([]byte(cache), &response); err != nil {
-		util.Logger().Error()
+		logger.Error()
 		return proto.ResponseDeviceQrCode{}, err
 	}
 	return response, nil
@@ -185,7 +185,7 @@ func (du *DeviceUsecase) generateQrCode(value string, logo *os.File) (rgbqrcode.
 		},
 	)
 	if err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return rgbqrcode.ResultEncode{}, err
 	}
 	return qr.Encode()

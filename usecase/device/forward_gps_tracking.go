@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/usecase"
+	"github.com/aditya37/logger"
 )
 
 // forward/response data tracking to device
@@ -16,7 +16,7 @@ func (du *DeviceUsecase) ForwardGPSTracking(m *usecase.ForwardTrackingPayload) {
 
 		device, err := du.deviceManagerRepo.GetDeviceByDeviceId(ctx, m.GpsData.DeviceId)
 		if err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			return
 		}
 
@@ -41,7 +41,7 @@ func (du *DeviceUsecase) ForwardGPSTracking(m *usecase.ForwardTrackingPayload) {
 			false,
 			jsonMsg,
 		); err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			return
 		}
 	} else {
@@ -49,7 +49,7 @@ func (du *DeviceUsecase) ForwardGPSTracking(m *usecase.ForwardTrackingPayload) {
 
 		device, err := du.deviceManagerRepo.GetDeviceByDeviceId(ctx, m.GpsData.DeviceId)
 		if err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			return
 		}
 
@@ -78,7 +78,7 @@ func (du *DeviceUsecase) ForwardGPSTracking(m *usecase.ForwardTrackingPayload) {
 			false,
 			jsonMsg,
 		); err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			return
 		}
 	}

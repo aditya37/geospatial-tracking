@@ -8,11 +8,11 @@ import (
 	"log"
 	"math"
 
-	logger "github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
 	"github.com/aditya37/geospatial-tracking/proto"
 	"github.com/aditya37/geospatial-tracking/repository"
 	"github.com/aditya37/geospatial-tracking/usecase"
+	"github.com/aditya37/logger"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -20,16 +20,16 @@ func (du *DeviceUsecase) SubscribeRegisterDevice(c mqtt.Client, m mqtt.Message) 
 	ctx := context.Background()
 	payload, err := du.unmarshallRegisterPayload(m.Payload())
 	if err != nil {
-		logger.Logger().Error(err)
+		logger.Error(err)
 		return
 	}
 	// check device is registered or not
 	if _, err := du.deviceManagerRepo.GetDeviceByDeviceId(ctx, payload.Deviceid); err != nil {
-		logger.Logger().Error(err)
+		logger.Error(err)
 		if err == repository.ErrDeviceNotFound {
 			// reigster device if device id not found
 			if err := du.registerDevice(ctx, payload); err != nil {
-				logger.Logger().Error(err)
+				logger.Error(err)
 				// publish resp error...
 				go du.publishRespRegister(
 					"/device/resp/register",
@@ -168,7 +168,7 @@ func (du *DeviceUsecase) registerDeviceWithEmbeddedSensor(ctx context.Context, p
 	// attach sensor informataion and insert to db...
 	validSensor, err := du.validateEmbeddedSensor(ctx, payload)
 	if err != nil {
-		logger.Logger().Error(err)
+		logger.Error(err)
 		return err
 	}
 
@@ -253,7 +253,7 @@ func (du *DeviceUsecase) unmarshallRegisterPayload(data []byte) (usecase.MqttReg
 
 // PublishNotify....
 func (du *DeviceUsecase) publishRespRegister(topic string, data usecase.MqttRespRegisterDevice) error {
-	logger.Logger().Info(fmt.Sprintf("Publish register response to %s", topic))
+	logger.Info(fmt.Sprintf("Publish register response to %s", topic))
 	j, _ := json.Marshal(data)
 	if err := du.mqttmanager.Publish(topic, 1, false, j); err != nil {
 		return err
@@ -271,7 +271,7 @@ func (du *DeviceUsecase) validateEmbeddedSensor(ctx context.Context, payload use
 		payload.EmbeddedSensor,
 	)
 	if err != nil {
-		logger.Logger().Error(err)
+		logger.Error(err)
 		return nil, err
 	}
 	mapEmbeddedSensor := map[int]int{}

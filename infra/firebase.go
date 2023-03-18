@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	gofbs "firebase.google.com/go/v4"
-	"github.com/aditya37/geofence-service/util"
+	"github.com/aditya37/logger"
 	"google.golang.org/api/option"
 )
 
@@ -33,7 +33,7 @@ func NewFirebaseClient(ctx context.Context, config FirebaseConfig) error {
 			option.WithServiceAccountFile(config.PathCredFile),
 		)
 		if err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			firebaseErr = err
 		}
 		firebaseInstance = client

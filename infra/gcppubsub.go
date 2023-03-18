@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/aditya37/geofence-service/util"
+	"github.com/aditya37/logger"
 	"google.golang.org/api/option"
 )
 
@@ -18,7 +18,7 @@ func NewGcpPubsubInstance(ctx context.Context, projectid string, opts ...option.
 	gcppubsubSingleton.Do(func() {
 		client, err := pubsub.NewClient(ctx, projectid, opts...)
 		if err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			return
 		}
 		gcppubsubInstance = client

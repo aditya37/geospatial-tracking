@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aditya37/geofence-service/util"
 	"github.com/aditya37/geospatial-tracking/entity"
 	"github.com/aditya37/geospatial-tracking/repository"
 	"github.com/aditya37/geospatial-tracking/usecase"
+	"github.com/aditya37/logger"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	geojson "github.com/paulmach/go.geojson"
 )
@@ -18,7 +18,7 @@ func (du *DeviceUsecase) SubscribeGPSTracking(c mqtt.Client, m mqtt.Message) {
 	ctx := context.Background()
 	payload, err := du.unmarshallTrackingPayload(m.Payload())
 	if err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		go du.gpChannelStream.StoreTrackingToStreamChan(payload, err)
 		return
 	}
@@ -34,13 +34,13 @@ func (du *DeviceUsecase) SubscribeGPSTracking(c mqtt.Client, m mqtt.Message) {
 	if err != nil {
 		if err == repository.ErrLastTrackingNotFound {
 			if validRequest := du.validateRequestPayloadBeforeInsert(payload, status); !validRequest {
-				util.Logger().Error("Wrong request for insert")
+				logger.Error("Wrong request for insert")
 				return
 			} else {
 				// do insert with last status "STOP"
-				util.Logger().Info(fmt.Sprintf("Insert tracking from %s", payload.DeviceId))
+				logger.Info(fmt.Sprintf("Insert tracking from %s", payload.DeviceId))
 				if err := du.insertGPSTracking(ctx, payload); err != nil {
-					util.Logger().Error(err)
+					logger.Error(err)
 					// publish to channel gps tracking forwader
 					du.gpsChanForward.Publish(
 						usecase.ForwardTrackingPayload{
@@ -55,19 +55,19 @@ func (du *DeviceUsecase) SubscribeGPSTracking(c mqtt.Client, m mqtt.Message) {
 				return
 			}
 		}
-		util.Logger().Error(err)
+		logger.Error(err)
 		return
 	}
 
 	if availableCurrentTrack := du.evaluateLastTrackingStatus(status.Status); !availableCurrentTrack {
 		if validRequest := du.validateRequestPayloadBeforeInsert(payload, status); !validRequest {
-			util.Logger().Error("Wrong request for insert")
+			logger.Error("Wrong request for insert")
 			return
 		} else {
 			// do insert with last status "STOP"
-			util.Logger().Info(fmt.Sprintf("Insert tracking with last status %s from %s", payload.DeviceId, status.Status))
+			logger.Info(fmt.Sprintf("Insert tracking with last status %s from %s", payload.DeviceId, status.Status))
 			if err := du.insertGPSTracking(ctx, payload); err != nil {
-				util.Logger().Error(err)
+				logger.Error(err)
 				du.gpsChanForward.Publish(
 					usecase.ForwardTrackingPayload{
 						Message: err.Error(),
@@ -81,9 +81,9 @@ func (du *DeviceUsecase) SubscribeGPSTracking(c mqtt.Client, m mqtt.Message) {
 		}
 	} else {
 		// do update
-		util.Logger().Info(fmt.Sprintf("Do tracking from %s", payload.DeviceId))
+		logger.Info(fmt.Sprintf("Do tracking from %s", payload.DeviceId))
 		if err := du.updateGPSTracking(ctx, payload, status.Id); err != nil {
-			util.Logger().Error(err)
+			logger.Error(err)
 			du.gpsChanForward.Publish(
 				usecase.ForwardTrackingPayload{
 					Message: err.Error(),
@@ -129,7 +129,7 @@ func (du *DeviceUsecase) updateGPSTracking(ctx context.Context, payload usecase.
 		Temp:           payload.Temp,
 		SignalStrength: payload.Signal,
 	}); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return err
 	}
 	return nil
@@ -157,7 +157,7 @@ func (du *DeviceUsecase) insertGPSTracking(ctx context.Context, payload usecase.
 			Waypoints:      jsonLineString,
 		},
 	); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return err
 	}
 	return nil
@@ -180,7 +180,7 @@ func (du *DeviceUsecase) getLastTrackingStatus(ctx context.Context, device_id st
 		interval,
 	)
 	if err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return entity.GPSTracking{}, err
 	}
 
@@ -205,7 +205,7 @@ func (du *DeviceUsecase) evaluateLastTrackingStatus(status string) bool {
 func (du *DeviceUsecase) unmarshallTrackingPayload(data []byte) (usecase.MqttGpsTrackingPayload, error) {
 	var payload usecase.MqttGpsTrackingPayload
 	if err := json.Unmarshal(data, &payload); err != nil {
-		util.Logger().Error(err)
+		logger.Error(err)
 		return usecase.MqttGpsTrackingPayload{}, err
 	}
 	return payload, nil
