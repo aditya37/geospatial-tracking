@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	getenv "github.com/aditya37/get-env"
@@ -28,6 +29,7 @@ func serve(grpc *grpc.Server, httpHandler http.Handler) error {
 		Handler: routeHandler(grpc, httpHandler),
 	}
 	log.Println("Geotracking service run on port", getenv.GetString("PORT", "1111"))
+	log.Printf("APM Service name %s", os.Getenv("ELASTIC_APM_SERVICE_NAME"))
 	// serve grpc
 	go grpc.Serve(grpcl)
 	// serve http
