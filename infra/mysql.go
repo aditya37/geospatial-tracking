@@ -6,8 +6,9 @@ import (
 	"log"
 	"sync"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/pressly/goose"
+	"go.elastic.co/apm/module/apmsql"
+	_ "go.elastic.co/apm/module/apmsql/mysql"
 )
 
 type MysqlConfigParam struct {
@@ -47,7 +48,7 @@ func NewMysqlClient(param MysqlConfigParam) error {
 			param.Port,
 			param.Name,
 		))
-		db, err := sql.Open("mysql", connURL)
+		db, err := apmsql.Open("mysql", connURL)
 		if err != nil {
 			retErr = err
 			return

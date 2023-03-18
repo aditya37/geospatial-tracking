@@ -16,6 +16,7 @@ require (
 	github.com/paulmach/go.geojson v1.4.0
 	github.com/pressly/goose v2.7.0+incompatible
 	github.com/soheilhy/cmux v0.1.5
+	go.elastic.co/apm/module/apmsql v1.15.0 // indirect
 	google.golang.org/api v0.102.0
 	google.golang.org/grpc v1.52.3
 	google.golang.org/protobuf v1.28.1
