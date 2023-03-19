@@ -694,6 +694,8 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 github.com/zenazn/goji v0.9.0/go.mod h1:7S9M489iMyHBNxwZnk9/EHS098H4/F6TATF2mIxtB1Q=
+gitlab.com/coresquad/apm v0.0.0-20230319021607-8914d14d4ff7 h1:ok1VEFYsZbiTddaLmyoxVGpX43ds8kzXX5YFt58JKIo=
+gitlab.com/coresquad/apm v0.0.0-20230319021607-8914d14d4ff7/go.mod h1:QVQ9r59NjWgW+KMcLyJaLQaeapa4Yc7YtFylP+idbOc=
 go.elastic.co/apm v1.15.0 h1:uPk2g/whK7c7XiZyz/YCUnAUBNPiyNeE3ARX3G6Gx7Q=
 go.elastic.co/apm v1.15.0/go.mod h1:dylGv2HKR0tiCV+wliJz1KHtDyuD8SPe69oV7VyK6WY=
 go.elastic.co/apm/module/apmgrpc v1.15.0 h1:Z7h58uuMJUoYXK6INFunlcGEXZQ18QKAhPh6NFYDNHE=

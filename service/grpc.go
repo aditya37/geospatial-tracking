@@ -14,7 +14,6 @@ import (
 	"github.com/aditya37/geospatial-tracking/proto"
 	"github.com/aditya37/geospatial-tracking/repository"
 	mqtt_manager "github.com/aditya37/geospatial-tracking/repository/mqtt"
-	getenv "github.com/aditya37/get-env"
 
 	chan_repo "github.com/aditya37/geospatial-tracking/repository/channel"
 	firebase_manager "github.com/aditya37/geospatial-tracking/repository/firebase"
@@ -23,6 +22,7 @@ import (
 	cache_manager "github.com/aditya37/geospatial-tracking/repository/redis"
 	device_case "github.com/aditya37/geospatial-tracking/usecase/device"
 	config "github.com/aditya37/get-env"
+	coreapmgrpc "gitlab.com/coresquad/apm/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -80,13 +80,13 @@ func NewGrpc() (Grpc, error) {
 	// gcppubsubInstance...
 	infra.NewGcpPubsubInstance(
 		ctx,
-		getenv.GetString("GCP_PROJECT_ID", ""),
+		config.GetString("GCP_PROJECT_ID", ""),
 	)
 	gcpPubsubInstane := infra.GetGcpPubsubInstance()
 	if gcpPubsubInstane == nil {
 		infra.NewGcpPubsubInstance(
 			ctx,
-			getenv.GetString("GCP_PROJECT_ID", ""),
+			config.GetString("GCP_PROJECT_ID", ""),
 		)
 		gcpPubsubInstane = infra.GetGcpPubsubInstance()
 	}
@@ -205,9 +205,9 @@ func (g *grpcSvc) Run() {
 		errs <- fmt.Errorf("%s", <-c)
 		defer g.close()
 	}()
-	opt := GetGrpcServerElasticApmOptions(
-		SetUnaryMiddleware(grpc_deliv_mid.UnaryAuthMiddleware()),
-		SetStreamMiddleware(grpc_deliv_mid.StreamAuthMiddleware()),
+	opt := coreapmgrpc.GetGrpcServerElasticApmOptions(
+		coreapmgrpc.SetUnaryMiddleware(grpc_deliv_mid.UnaryAuthMiddleware()),
+		coreapmgrpc.SetStreamMiddleware(grpc_deliv_mid.StreamAuthMiddleware()),
 	)
 	server := grpc.NewServer(opt...)
 	proto.RegisterGeotrackingServer(server, g.grpcTrackingDlv)
